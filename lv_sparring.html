@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0a1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BCU Boxing">
+<meta name="apple-mobile-web-app-title" content="Boxing Connect USA">
+<title>Boxing Connect USA</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0a1628;color:#fff;font-family:-apple-system,system-ui,sans-serif;max-width:480px;margin:0 auto;min-height:100vh}
+button,input,select,textarea{font-family:inherit;-webkit-appearance:none}
+button:active{opacity:.8;transform:scale(.97)}
+.app{display:none}
+.pg{display:none;padding-bottom:70px}
+.pg.act{display:block}
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#060e1c;border-top:1px solid #1a2d4a;display:flex;z-index:100}
+.nb{flex:1;background:none;border:none;color:#3a4a5a;padding:10px 2px 8px;font-size:9px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;letter-spacing:.5px}
+.nb .ico{font-size:20px}
+.nb.on{color:#FFD700}
+.hdr{background:#060e1c;border-bottom:2px solid #FFD700;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.hdr-title{font-size:14px;font-weight:900;color:#FFD700;line-height:1.2}
+.hdr-sub{font-size:9px;color:#4a6a8a;letter-spacing:1px}
+.btn-y{background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;border:none;border-radius:12px;padding:14px;font-weight:900;width:100%;cursor:pointer;font-size:15px;display:block}
+.btn-b{background:linear-gradient(135deg,#0a1a3a,#060e1c);color:#4a8aff;border:2px solid #4a8aff;border-radius:12px;padding:14px;font-weight:900;width:100%;cursor:pointer;font-size:15px;display:block}
+.btn-r{background:#e74c3c;color:#fff;border:none;border-radius:12px;padding:14px;font-weight:900;width:100%;cursor:pointer;font-size:15px;display:block}
+.btn-dark{background:#000;color:#FFD700;border:2px solid #1a2d4a;border-radius:12px;padding:12px;font-weight:700;width:100%;cursor:pointer;font-size:14px;display:block}
+.card{background:#000;border:1px solid #1a2d4a;border-radius:14px;padding:14px;margin-bottom:10px}
+.inp{width:100%;background:#000;border:2px solid #1a2d4a;color:#fff;border-radius:10px;padding:12px;font-size:14px;outline:none}
+.inp:focus{border-color:#FFD700}
+.sel{width:100%;background:#000;border:2px solid #1a2d4a;color:#fff;border-radius:10px;padding:12px;font-size:14px;outline:none}
+.lbl{display:block;font-size:10px;font-weight:700;color:#4a6a8a;letter-spacing:1px;margin-bottom:5px}
+.stat-box{flex:1;background:#000;border:1px solid #1a2d4a;border-radius:12px;padding:12px;text-align:center}
+.stat-num{font-size:26px;font-weight:900;color:#FFD700}
+.stat-lbl{font-size:9px;color:#3a4a5a;letter-spacing:1px;margin-top:2px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-box{background:#060e1c;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.close-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;position:sticky;top:0;background:#060e1c;padding:8px 0 6px;z-index:10;border-bottom:1px solid #1a2d4a}
+.close-x{background:#e74c3c;border:none;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;font-weight:900;cursor:pointer}
+.sec-hdr{font-size:10px;font-weight:900;color:#FFD700;letter-spacing:2px;padding:14px 14px 6px}
+.post-card{background:#000;border:1px solid #1a2d4a;border-radius:14px;margin-bottom:10px;overflow:hidden}
+.ath-card{background:#000;border:1px solid #1a2d4a;border-radius:14px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.ath-av{width:50px;height:50px;border-radius:12px;background:#1a2d4a;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;flex-shrink:0;overflow:hidden}
+</style>
+
+<script>
+// PWA Manifest injection
+(function(){
+  var manifest = {
+    name: "Boxing Connect USA",
+    short_name: "BCU Boxing",
+    description: "La Red del Boxeo en USA y Latinoamérica",
+    start_url: "/",
+    display: "standalone",
+    background_color: "#0a1628",
+    theme_color: "#FFD700",
+    orientation: "portrait-primary",
+    icons: [
+      {src:"https://fav.farm/🥊",sizes:"192x192",type:"image/png",purpose:"any maskable"},
+      {src:"https://fav.farm/🥊",sizes:"512x512",type:"image/png",purpose:"any maskable"}
+    ]
+  };
+  var blob = new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
+  var url = URL.createObjectURL(blob);
+  var link = document.createElement("link");
+  link.rel = "manifest";
+  link.href = url;
+  document.head.appendChild(link);
+})();
+</script>
+
+</head>
+<body>
+
+<div id="reg" style="display:none;min-height:100vh;padding:20px">
+  <div id="reg-content"></div>
+</div>
+
+<div class="app" id="app">
+  <div id="pg-inicio" class="pg">
+    <div class="hdr">
+      <div>
+        <div class="hdr-title" id="home-name">Boxing Connect USA</div>
+        <div class="hdr-sub" id="home-sub">LA RED DEL BOXEO EN USA</div>
+      </div>
+      <button onclick="openMenu()" style="background:#000;border:2px solid #FFD700;color:#FFD700;border-radius:10px;padding:8px 12px;font-size:20px;cursor:pointer">☰</button>
+    </div>
+    <div style="padding:14px">
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <div class="stat-box"><div class="stat-num" id="stat-gyms">0</div><div class="stat-lbl">GYMS</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-athletes">0</div><div class="stat-lbl">ATLETAS</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-posts">0</div><div class="stat-lbl">POSTS</div></div>
+      </div>
+      <div id="home-news" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div id="pg-sparring" class="pg">
+    <div class="hdr">
+      <div><div class="hdr-title">🥊 SPARRING</div></div>
+      <button id="new-sp-btn" class="btn-y" style="padding:8px 14px;width:auto;font-size:13px">+ NUEVO</button>
+    </div>
+    <div id="sp-filters" style="padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap"></div>
+    <div id="sp-list" style="padding:0 14px 14px"></div>
+  </div>
+
+  <div id="pg-eventos" class="pg">
+    <div class="hdr">
+      <div><div class="hdr-title">🏆 EVENTOS</div></div>
+      <button id="new-ev-btn" class="btn-y" style="padding:8px 14px;width:auto;font-size:13px">+ NUEVO</button>
+    </div>
+    <div id="ev-list" style="padding:14px"></div>
+  </div>
+
+  <div id="pg-atletas" class="pg">
+    <div class="hdr">
+      <div><div class="hdr-title">👤 ATLETAS</div></div>
+      <button id="new-ath-btn" class="btn-y" style="padding:8px 14px;width:auto;font-size:13px">+ REGISTRAR</button>
+    </div>
+    <div id="ath-list" style="padding:14px"></div>
+  </div>
+
+  <div id="pg-feed" class="pg">
+    <div class="hdr">
+      <div><div class="hdr-title">🌍 FEED</div></div>
+      <button id="new-post-btn" class="btn-y" style="padding:8px 14px;width:auto;font-size:13px">+ PUBLICAR</button>
+    </div>
+    <div id="feed-list" style="padding:14px"></div>
+  </div>
+
+  <div id="nav"></div>
+  <div id="modal"></div>
+  <div id="menu-panel" style="display:none;position:fixed;inset:0;z-index:300">
+    <div onclick="closeMenu()" style="position:absolute;inset:0;background:rgba(0,0,0,.7)"></div>
+    <div style="position:absolute;right:0;top:0;bottom:0;width:280px;background:#060e1c;overflow-y:auto;padding:20px">
+      <div id="menu-content"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────
+var FB_CFG = {
+  apiKey:"AIzaSyBeDkB3VWXULvXwYBBLlwQ4CfR03uuf6pA",
+  authDomain:"lv-boxing-connect-47e24.firebaseapp.com",
+  databaseURL:"https://lv-boxing-connect-47e24-default-rtdb.firebaseio.com",
+  projectId:"lv-boxing-connect-47e24",
+  appId:"1:60626033738:web:c036d9569a6e2da273dab3"
+};
+
+var WEIGHTS = ["108","112","115","119","122","126","130","132","135","140","147","154","160","168","175","200"];
+var COUNTRIES = {
+  "USA":["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming","Puerto Rico"],
+  "México":["Ciudad de México","Jalisco","Nuevo León","Estado de México","Puebla","Guanajuato","Veracruz","Chihuahua","Tamaulipas","Baja California","Sonora","Sinaloa","Guerrero","Oaxaca","Chiapas","Michoacán","Coahuila","Durango","Hidalgo","Tabasco","Aguascalientes","Morelos","Campeche","Nayarit","Tlaxcala","Yucatán","Querétaro","Quintana Roo","Zacatecas","Colima","San Luis Potosí","Baja California Sur"],
+  "Cuba":["La Habana","Santiago de Cuba","Holguín","Villa Clara","Granma","Camagüey","Guantánamo","Pinar del Río","Matanzas","Cienfuegos","Las Tunas","Sancti Spíritus","Ciego de Ávila","Artemisa","Mayabeque"],
+  "Colombia":["Bogotá","Antioquia","Valle del Cauca","Atlántico","Bolívar","Santander","Cundinamarca","Córdoba","Nariño","Tolima","Norte de Santander","Cauca","Risaralda","Caldas","Magdalena","Cesar","Meta","Sucre","La Guajira","Quindío","Chocó","Huila"],
+  "Puerto Rico":["San Juan","Bayamón","Carolina","Ponce","Caguas","Guaynabo","Arecibo","Mayagüez","Trujillo Alto","Aguadilla"],
+  "Rep. Dominicana":["Santo Domingo","Santiago","San Pedro de Macorís","La Romana","San Cristóbal","Puerto Plata"],
+  "Venezuela":["Caracas","Maracaibo","Valencia","Barquisimeto","Maracay","Maturín","Barcelona","Cumaná"],
+  "Panamá":["Ciudad de Panamá","Colón","David","Santiago","La Chorrera"],
+  "Argentina":["Buenos Aires","Córdoba","Rosario","Mendoza","San Miguel de Tucumán","La Plata","Mar del Plata"],
+  "España":["Madrid","Barcelona","Valencia","Sevilla","Zaragoza","Málaga","Murcia","Bilbao"]
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+var fdb = null;
+var gym = null;
+var athlete = null;
+var allPosts = [], allAthletes = [], allEvents = [], allFeedPosts = [];
+var curPage = "inicio";
+var lng = navigator.language.startsWith("es") ? "es" : "en";
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function el(id){ return document.getElementById(id); }
+function xe(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function L(es,en){ return lng==="es" ? es : en; }
+function sv(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+function ld(k,d){ try{var v=localStorage.getItem(k);return v!=null?JSON.parse(v):d;}catch(e){return d;} }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).substr(2,6); }
+function ago(ts){
+  if(!ts) return "";
+  var d = (Date.now()-ts)/1000;
+  if(d<60) return L("ahora","now");
+  if(d<3600) return Math.floor(d/60)+"m";
+  if(d<86400) return Math.floor(d/3600)+"h";
+  return Math.floor(d/86400)+"d";
+}
+function showM(html){
+  el("modal").innerHTML = '<div class="modal-bg"><div class="modal-box">'
+    +'<div class="close-bar"><div></div><button class="close-x" onclick="closeM()">✕</button></div>'
+    +html+'</div></div>';
+}
+function closeM(){ el("modal").innerHTML=""; }
+
+// ── FIREBASE ──────────────────────────────────────────────────────────────
+function initFB(){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(FB_CFG);
+    fdb = firebase.database();
+    loadData();
+    return true;
+  }catch(e){ return false; }
+}
+
+function fbPush(path, data, cb){
+  if(!fdb){ if(cb)cb(false); return; }
+  fdb.ref(path).push(data).then(function(){ if(cb)cb(true); }).catch(function(){ if(cb)cb(false); });
+}
+
+function fbSet(path, data, cb){
+  if(!fdb){ if(cb)cb(false); return; }
+  fdb.ref(path).set(data).then(function(){ if(cb)cb(true); }).catch(function(){ if(cb)cb(false); });
+}
+
+function loadData(){
+  if(!fdb) return;
+  // Gyms
+  fdb.ref("gyms").on("value", function(s){
+    var n=0; s.forEach(function(){ n++; });
+    var e=el("stat-gyms"); if(e) e.textContent=n;
+  });
+  // Athletes
+  fdb.ref("athletes").on("value", function(s){
+    allAthletes=[];
+    s.forEach(function(c){ var v=c.val(); v.id=c.key; allAthletes.push(v); });
+    var e=el("stat-athletes"); if(e) e.textContent=allAthletes.length;
+    if(curPage==="atletas") renderAthletes();
+  });
+  // Posts
+  fdb.ref("posts").orderByChild("createdAt").limitToLast(50).on("value", function(s){
+    allPosts=[];
+    s.forEach(function(c){ var v=c.val(); v.id=c.key; allPosts.push(v); });
+    allPosts.reverse();
+    var e=el("stat-posts"); if(e) e.textContent=allPosts.length;
+    if(curPage==="sparring") renderSparring();
+  });
+  // Events
+  fdb.ref("events").orderByChild("date").on("value", function(s){
+    allEvents=[];
+    s.forEach(function(c){ var v=c.val(); v.id=c.key; allEvents.push(v); });
+    if(curPage==="eventos") renderEventos();
+  });
+  // Feed
+  fdb.ref("communityPosts").orderByChild("createdAt").limitToLast(50).on("value", function(s){
+    allFeedPosts=[];
+    s.forEach(function(c){ var v=c.val(); v.id=c.key; allFeedPosts.push(v); });
+    allFeedPosts.reverse();
+    if(curPage==="feed") renderFeed();
+  });
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────────
+function buildNav(){
+  var tabs = [
+    {id:"inicio",ico:"🏠",label:"INICIO"},
+    {id:"sparring",ico:"🥊",label:"SPARRING"},
+    {id:"eventos",ico:"🏆",label:"EVENTOS"},
+    {id:"atletas",ico:"👤",label:"ATLETAS"},
+    {id:"feed",ico:"🌍",label:"FEED"}
+  ];
+  var h = "";
+  tabs.forEach(function(t){
+    h += '<button class="nb'+(curPage===t.id?" on":"")
+      +'" onclick="goPage(\''+t.id+'\')">'
+      +'<span class="ico">'+t.ico+'</span>'+t.label+'</button>';
+  });
+  el("nav").innerHTML = h;
+}
+
+function goPage(p){
+  curPage = p;
+  document.querySelectorAll(".pg").forEach(function(e){ e.classList.remove("act"); });
+  var pg = el("pg-"+p);
+  if(pg) pg.classList.add("act");
+  buildNav();
+  if(p==="sparring") renderSparring();
+  if(p==="eventos") renderEventos();
+  if(p==="atletas") renderAthletes();
+  if(p==="feed") renderFeed();
+  if(p==="inicio") renderHome();
+}
+
+// ── HOME ──────────────────────────────────────────────────────────────────
+function renderHome(){
+  var user = gym || athlete;
+  if(user){
+    var nm = el("home-name");
+    var sb = el("home-sub");
+    if(nm) nm.textContent = (gym?"🏋️ ":"👤 ") + (gym?gym.name:athlete.name);
+    if(sb) sb.textContent = gym ? (gym.city||"") : ((athlete.weight||"")+"lb • "+(athlete.country||""));
+  }
+  // Load news
+  loadNews();
+}
+
+function loadNews(){
+  var cont = el("home-news");
+  if(!cont) return;
+  var RSS = "https://rss.app/feeds/IXCBLERcgy93hqDn.xml";
+  var proxy = "https://api.allorigins.win/raw?url="+encodeURIComponent(RSS);
+  fetch(proxy).then(function(r){return r.text();}).then(function(xml){
+    var items = [];
+    var matches = xml.match(/<item>[\s\S]*?<\/item>/g) || [];
+    matches.slice(0,3).forEach(function(item){
+      var t = (item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)||item.match(/<title>(.*?)<\/title>/))||[];
+      var l = (item.match(/<link>(.*?)<\/link>/))||[];
+      var d = (item.match(/<pubDate>(.*?)<\/pubDate>/))||[];
+      if(t[1]) items.push({title:t[1],link:l[1]||"#",date:d[1]||""});
+    });
+    var h = '<div class="sec-hdr" style="padding:0 0 8px">📰 USA BOXING NEWS</div>';
+    items.forEach(function(item){
+      h += '<div class="card" style="margin-bottom:8px;cursor:pointer" onclick="window.open(\''+xe(item.link)+'\',\'_blank\')">';
+      h += '<div style="font-size:10px;color:#FFD700;margin-bottom:4px">'+xe(item.date.substr(0,16))+'</div>';
+      h += '<div style="font-size:13px;font-weight:700;color:#fff;line-height:1.4">'+xe(item.title)+'</div>';
+      h += '<div style="font-size:11px;color:#4a8aff;margin-top:6px">LEER MÁS ↗</div></div>';
+    });
+    cont.innerHTML = h;
+  }).catch(function(){ cont.innerHTML=""; });
+}
+
+// ── MENU ──────────────────────────────────────────────────────────────────
+function openMenu(){
+  var user = gym || athlete;
+  var h = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    +'<div style="font-size:16px;font-weight:900;color:#FFD700">Boxing Connect USA</div>'
+    +'<button onclick="closeMenu()" style="background:#e74c3c;border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer">✕</button></div>';
+
+  if(user){
+    h += '<div class="card" style="margin-bottom:14px">'
+      +'<div style="font-size:14px;font-weight:800;color:#fff">'+(gym?gym.name:athlete.name)+'</div>'
+      +'<div style="font-size:11px;color:#4a6a8a;margin-top:2px">'+(gym?"Coach: "+gym.coach:"Atleta • "+(athlete.weight||"")+"lb")+'</div></div>';
+  }
+
+  var items = [
+    {ico:"🏠",label:"Inicio",action:"goPage('inicio')"},
+    {ico:"🥊",label:"Sparring",action:"goPage('sparring')"},
+    {ico:"🏆",label:"Eventos",action:"goPage('eventos')"},
+    {ico:"👤",label:"Atletas",action:"goPage('atletas')"},
+    {ico:"🌍",label:"Feed Social",action:"goPage('feed')"},
+    {ico:"⏱️",label:"Cronómetro",action:"showTimer()"},
+    {ico:"📺",label:"Peleas en Vivo",action:"showLiveFights()"},
+    {ico:"🛒",label:"Tienda de Boxeo",action:"showStore()"},
+    {ico:"⚖️",label:"Política de Pesos",action:"showWeightPolicy()"},
+    {ico:"📰",label:"Noticias USA Boxing",action:"goPage('inicio')"}
+  ];
+
+  if(!user){
+    h += '<button onclick="closeMenu();showReg()" class="btn-y" style="margin-bottom:14px">REGISTRARSE</button>';
+  } else {
+    h += '<button onclick="closeMenu();doLogout()" class="btn-dark" style="margin-bottom:14px">Cerrar Sesión</button>';
+  }
+
+  h += '<div style="font-size:10px;color:#4a6a8a;margin-bottom:8px;letter-spacing:1px">NAVEGACIÓN</div>';
+  items.forEach(function(item){
+    h += '<button onclick="closeMenu();'+item.action+'" style="width:100%;background:none;border:none;color:#fff;padding:12px 8px;text-align:left;cursor:pointer;border-bottom:1px solid #1a2d4a;font-size:14px">'+item.ico+' '+item.label+'</button>';
+  });
+
+  el("menu-content").innerHTML = h;
+  el("menu-panel").style.display = "block";
+}
+function closeMenu(){ el("menu-panel").style.display="none"; }
+
+function doLogout(){
+  if(confirm(L("¿Cerrar sesión?","Logout?"))){
+    localStorage.removeItem("bcu_gym");
+    localStorage.removeItem("bcu_athlete");
+    location.reload();
+  }
+}
+
+// ── REGISTRATION ──────────────────────────────────────────────────────────
+function showReg(){
+  el("reg").style.display="block";
+  el("app").style.display="none";
+  renderRegWelcome();
+}
+
+function renderRegWelcome(){
+  var feats = [
+    "🥊 "+L("Publica sparring y conecta con coaches","Post sparring and connect with coaches"),
+    "🏆 "+L("Eventos y torneos en USA","Events and tournaments in USA"),
+    "👤 "+L("Registra tus atletas con su récord","Register your athletes with their record"),
+    "📰 "+L("Noticias oficiales USA Boxing","Official USA Boxing news"),
+    "⏱️ "+L("Cronómetro de sparring con campanas","Sparring timer with bells"),
+    "⚖️ "+L("Política de pesos 2-3 lb estricta","Strict 2-3 lb weight policy")
+  ];
+  var h = '<div style="text-align:center;padding:20px 0 10px">'
+    +'<div style="font-size:32px;font-weight:900;color:#FFD700;line-height:1.1">BOXING<br>CONNECT USA</div>'
+    +'<div style="font-size:11px;color:#4a6a8a;margin-top:4px;letter-spacing:1px">'+L("LA RED DEL BOXEO EN USA","THE BOXING NETWORK IN USA")+'</div></div>';
+  h += '<div class="card" style="margin-bottom:16px">';
+  feats.forEach(function(f){
+    h += '<div style="font-size:13px;color:#ccc;padding:6px 0;border-bottom:1px solid #1a2d4a">'+f+'</div>';
+  });
+  h += '</div>';
+  h += '<button id="btn-coach" class="btn-y" style="margin-bottom:10px;padding:16px">🏋️ '+L("SOY COACH — Registrar mi Gym","I AM A COACH — Register my Gym")+'</button>';
+  h += '<button id="btn-ath" class="btn-b" style="padding:16px">👤 '+L("SOY ATLETA — Crear mi Perfil","I AM AN ATHLETE — Create my Profile")+'</button>';
+  el("reg-content").innerHTML = h;
+  el("btn-coach").onclick = function(){ renderRegCoach(); };
+  el("btn-ath").onclick = function(){ renderRegAthlete(); };
+}
+
+function renderRegCoach(){
+  var states = COUNTRIES["USA"];
+  var h = '<div style="font-size:20px;font-weight:900;color:#FFD700;margin-bottom:16px;text-align:center">🏋️ '+L("REGISTRAR MI GYM","REGISTER MY GYM")+'</div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">'+L("NOMBRE DEL GYM *","GYM NAME *")+'</label><input class="inp" id="c-name" placeholder="Osvimer Boxing Academy"></div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">'+L("NOMBRE DEL COACH *","COACH NAME *")+'</label><input class="inp" id="c-coach" placeholder="Coach Osvimer"></div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">'+L("PAIS","COUNTRY")+'</label><select class="sel" id="c-country" onchange="updateCoachStates()">';
+  Object.keys(COUNTRIES).forEach(function(ct){
+    h += '<option value="'+ct+'"'+(ct==="USA"?" selected":"")+'>'+ct+'</option>';
+  });
+  h += '</select></div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
+  h += '<div><label class="lbl">'+L("CIUDAD","CITY")+'</label><input class="inp" id="c-city" placeholder="Las Vegas"></div>';
+  h += '<div><label class="lbl">ESTADO</label><select class="sel" id="c-state">';
+  states.forEach(function(s){ h += '<option'+(s==="Nevada"?" selected":"")+'>'+s+'</option>'; });
+  h += '</select></div></div>';
+  h += '<div style="margin-bottom:14px"><label class="lbl">'+L("TELEFONO *","PHONE *")+'</label><input class="inp" id="c-phone" type="tel" placeholder="702-xxx-xxxx"></div>';
+  h += '<button id="c-submit" class="btn-y" style="margin-bottom:10px">'+L("REGISTRAR MI GYM","REGISTER MY GYM")+'</button>';
+  h += '<button onclick="renderRegWelcome()" class="btn-dark">← '+L("Volver","Back")+'</button>';
+  h += '<div id="c-msg" style="text-align:center;font-size:12px;margin-top:8px;min-height:16px"></div>';
+  el("reg-content").innerHTML = h;
+  el("c-submit").onclick = submitCoach;
+}
+
+function updateCoachStates(){
+  var ct = el("c-country"); if(!ct) return;
+  var st = el("c-state"); if(!st) return;
+  var states = COUNTRIES[ct.value] || COUNTRIES["USA"];
+  st.innerHTML = states.map(function(s){ return '<option>'+s+'</option>'; }).join("");
+}
+
+function submitCoach(){
+  var msg = el("c-msg");
+  var name = el("c-name"), coach = el("c-coach"), phone = el("c-phone");
+  var country = el("c-country"), state = el("c-state"), city = el("c-city");
+  if(!name||!name.value.trim()){ if(msg)msg.innerHTML='<span style="color:#e74c3c">'+L("Ingresa el nombre del gym","Enter gym name")+'</span>'; return; }
+  if(!phone||!phone.value.trim()){ if(msg)msg.innerHTML='<span style="color:#e74c3c">'+L("Ingresa el teléfono","Enter phone")+'</span>'; return; }
+  if(msg) msg.innerHTML='<span style="color:#FFD700">'+L("Registrando...","Registering...")+'</span>';
+  var gymData = {
+    id:uid(), name:name.value.trim(),
+    coach:coach?coach.value.trim():"",
+    country:country?country.value:"USA",
+    state:state?state.value:"",
+    city:city?city.value.trim():"",
+    phone:phone.value.trim(),
+    createdAt:Date.now()
+  };
+  if(fdb){
+    fdb.ref("gyms/"+gymData.id).set(gymData).then(function(){
+      gym = gymData;
+      sv("bcu_gym", gymData);
+      launch();
+    }).catch(function(){
+      gym = gymData;
+      sv("bcu_gym", gymData);
+      launch();
+    });
+  } else {
+    gym = gymData;
+    sv("bcu_gym", gymData);
+    launch();
+  }
+}
+
+function renderRegAthlete(){
+  var h = '<div style="font-size:20px;font-weight:900;color:#FFD700;margin-bottom:16px;text-align:center">👤 '+L("CREAR MI PERFIL","CREATE MY PROFILE")+'</div>';
+  h += '<div style="text-align:center;margin-bottom:14px">';
+  h += '<div id="a-photo-prev" style="width:80px;height:80px;border-radius:50%;background:#000;border:3px solid #FFD700;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:32px;overflow:hidden">👤</div>';
+  h += '<label style="background:#000;border:2px solid #FFD700;color:#FFD700;border-radius:10px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:700">📷 '+L("FOTO","PHOTO")+'<input type="file" id="a-photo-inp" accept="image/*" style="display:none" capture="user"></label></div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">'+L("NOMBRE COMPLETO *","FULL NAME *")+'</label><input class="inp" id="a-name" placeholder="'+L("Tu nombre","Your name")+'"></div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">'+L("FECHA NACIMIENTO","DATE OF BIRTH")+'</label><input class="inp" type="date" id="a-dob" max="'+new Date().toISOString().split("T")[0]+'"></div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
+  h += '<div><label class="lbl">'+L("PESO lb *","WEIGHT lb *")+'</label><select class="sel" id="a-weight"><option value="">'+L("Selecciona","Select")+'</option>';
+  WEIGHTS.forEach(function(w){ h += '<option>'+w+'</option>'; });
+  h += '</select></div><div><label class="lbl">SEXO</label><select class="sel" id="a-sex"><option value="M">'+L("Hombre","Male")+'</option><option value="F">'+L("Mujer","Female")+'</option></select></div></div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">PAÍS</label><select class="sel" id="a-country" onchange="updateAthStates()">';
+  Object.keys(COUNTRIES).forEach(function(ct){ h += '<option'+(ct==="USA"?" selected":"")+'>'+ct+'</option>'; });
+  h += '</select></div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
+  h += '<div><label class="lbl">CIUDAD</label><input class="inp" id="a-city" placeholder="Las Vegas"></div>';
+  h += '<div><label class="lbl">ESTADO</label><select class="sel" id="a-state">';
+  COUNTRIES["USA"].forEach(function(s){ h += '<option'+(s==="Nevada"?" selected":"")+'>'+s+'</option>'; });
+  h += '</select></div></div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">GYM ('+L("opcional","optional")+')</label><input class="inp" id="a-gym" placeholder="'+L("Tu gym","Your gym")+'"></div>';
+  h += '<div style="font-size:10px;color:#FFD700;font-weight:700;letter-spacing:1px;margin-bottom:8px">REDES SOCIALES</div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  h += '<input class="inp" id="a-ig" placeholder="📷 @instagram" style="font-size:12px">';
+  h += '<input class="inp" id="a-tt" placeholder="▶ @tiktok" style="font-size:12px">';
+  h += '</div>';
+  h += '<button id="a-submit" class="btn-y" style="margin-bottom:10px">'+L("CREAR MI PERFIL","CREATE MY PROFILE")+'</button>';
+  h += '<button onclick="renderRegWelcome()" class="btn-dark">← '+L("Volver","Back")+'</button>';
+  h += '<div id="a-msg" style="text-align:center;font-size:12px;margin-top:8px;min-height:16px"></div>';
+  el("reg-content").innerHTML = h;
+
+  var _photo = null;
+  var photoInp = el("a-photo-inp");
+  if(photoInp) photoInp.onchange = function(){
+    var file = this.files[0]; if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var canvas = document.createElement("canvas");
+        var MAX=150, w=img.width, h2=img.height;
+        if(w>h2){if(w>MAX){h2=h2*(MAX/w);w=MAX;}}else{if(h2>MAX){w=w*(MAX/h2);h2=MAX;}}
+        canvas.width=w; canvas.height=h2;
+        canvas.getContext("2d").drawImage(img,0,0,w,h2);
+        _photo = canvas.toDataURL("image/jpeg",0.7);
+        var prev = el("a-photo-prev");
+        if(prev) prev.innerHTML = '<img src="'+_photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  el("a-submit").onclick = function(){
+    var msg = el("a-msg");
+    var name = el("a-name"), wt = el("a-weight");
+    if(!name||!name.value.trim()){ if(msg)msg.innerHTML='<span style="color:#e74c3c">'+L("Ingresa tu nombre","Enter your name")+'</span>'; return; }
+    if(!wt||!wt.value){ if(msg)msg.innerHTML='<span style="color:#e74c3c">'+L("Selecciona tu peso","Select weight")+'</span>'; return; }
+    if(msg) msg.innerHTML='<span style="color:#FFD700">'+L("Creando perfil...","Creating profile...")+'</span>';
+    var dob = el("a-dob"), country = el("a-country"), state = el("a-state"), city = el("a-city");
+    var gym_name = el("a-gym"), ig = el("a-ig"), tt = el("a-tt"), sex = el("a-sex");
+    var age = null;
+    if(dob&&dob.value){ var b=new Date(dob.value),t=new Date(); age=t.getFullYear()-b.getFullYear(); if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))age--; }
+    var athData = {
+      id:uid(), type:"athlete",
+      name:name.value.trim(), dob:dob?dob.value:"", age:age,
+      weight:wt.value, sex:sex?sex.value:"M",
+      country:country?country.value:"USA",
+      state:state?state.value:"",
+      city:city?city.value.trim():"",
+      gymName:gym_name?gym_name.value.trim():"",
+      photo:_photo||null,
+      social:{instagram:ig?ig.value.trim().replace("@",""):"",tiktok:tt?tt.value.trim().replace("@",""):""},
+      wins:0, losses:0, draws:0,
+      createdAt:Date.now()
+    };
+    if(fdb){
+      fdb.ref("athletes/"+athData.id).set(athData).then(function(){
+        athlete=athData; sv("bcu_athlete",athData); launch();
+      }).catch(function(){ athlete=athData; sv("bcu_athlete",athData); launch(); });
+    } else { athlete=athData; sv("bcu_athlete",athData); launch(); }
+  };
+}
+
+function updateAthStates(){
+  var ct=el("a-country"); if(!ct) return;
+  var st=el("a-state"); if(!st) return;
+  var states=COUNTRIES[ct.value]||COUNTRIES["USA"];
+  st.innerHTML=states.map(function(s){return'<option>'+s+'</option>';}).join("");
+}
+
+// ── LAUNCH ────────────────────────────────────────────────────────────────
+function launch(){
+  el("reg").style.display="none";
+  el("app").style.display="block";
+  buildNav();
+  goPage("inicio");
+}
+
+// ── SPARRING ──────────────────────────────────────────────────────────────
+function renderSparring(){
+  var cont = el("sp-list"); if(!cont) return;
+  if(!allPosts.length){
+    cont.innerHTML='<div style="text-align:center;padding:40px 20px"><div style="font-size:48px;margin-bottom:12px">🥊</div><div style="font-size:16px;font-weight:800;color:#FFD700">'+L("Sin posts de sparring","No sparring posts")+'</div></div>';
+    return;
+  }
+  var h="";
+  allPosts.forEach(function(p){
+    h+='<div class="card" style="margin-bottom:10px">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">';
+    h+='<div><div style="font-size:15px;font-weight:800;color:#fff">'+xe(p.gymName)+'</div>';
+    h+='<div style="font-size:11px;color:#4a6a8a">'+xe(p.city||"")+(p.country&&p.country!=="USA"?" • "+xe(p.country):"")+" • "+ago(p.createdAt)+'</div></div>';
+    h+='<div style="font-size:10px;color:#FFD700;font-weight:700;background:#000;padding:4px 8px;border-radius:8px">'+xe(p.date||"")+'</div></div>';
+    if(p.athletes&&p.athletes.length){
+      h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">';
+      p.athletes.forEach(function(a){
+        h+='<span style="background:#1a2d4a;border-radius:8px;padding:4px 8px;font-size:11px;color:#FFD700">'+xe(a.weight)+'lb '+(a.sex==="M"?"♂":"♀")+'</span>';
+      });
+      h+='</div>';
+    }
+    if(p.notes) h+='<div style="font-size:12px;color:#8a9aaa;margin-bottom:8px">'+xe(p.notes)+'</div>';
+    h+='<div style="display:flex;gap:8px">';
+    if(p.phone) h+='<a href="tel:'+xe(p.phone)+'" style="flex:1;background:#27ae60;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;text-align:center;text-decoration:none">📞 '+L("Llamar","Call")+'</a>';
+    if(p.phone) h+='<a href="https://wa.me/1'+xe(p.phone.replace(/\D/g,""))+'" target="_blank" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;text-align:center;text-decoration:none">💬 WhatsApp</a>';
+    h+='</div></div>';
+  });
+  cont.innerHTML=h;
+}
+
+el("new-sp-btn") && (el("new-sp-btn").onclick = function(){
+  var user = gym||athlete; if(!user){showM('<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:12px">'+L("Regístrate primero","Register first")+'</div><button class="btn-y" onclick="closeM()">OK</button>');return;}
+  var h='<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">🥊 '+L("NUEVO SPARRING","NEW SPARRING")+'</div>';
+  h+='<div style="margin-bottom:10px"><label class="lbl">FECHA</label><input class="inp" type="date" id="sp-date" value="'+new Date().toISOString().split("T")[0]+'"></div>';
+  h+='<div style="margin-bottom:10px"><label class="lbl">'+L("NOTAS","NOTES")+'</label><textarea class="inp" id="sp-notes" placeholder="'+L("Detalles del sparring...","Sparring details...")+'" style="height:70px;resize:none"></textarea></div>';
+  h+='<div style="margin-bottom:14px"><label class="lbl">'+L("PESOS NECESARIOS","WEIGHTS NEEDED")+'</label>';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+  WEIGHTS.forEach(function(w){
+    h+='<button class="w-btn" data-w="'+w+'" style="background:#000;border:2px solid #1a2d4a;color:#4a6a8a;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer">'+w+'lb</button>';
+  });
+  h+='</div></div>';
+  h+='<button id="sp-submit" class="btn-y">'+L("PUBLICAR SPARRING","POST SPARRING")+'</button>';
+  h+='<div id="sp-msg" style="text-align:center;font-size:12px;margin-top:8px"></div>';
+  showM(h);
+  document.querySelectorAll(".w-btn").forEach(function(b){
+    b.onclick=function(){
+      var on=this.dataset.on==="1";
+      this.dataset.on=on?"0":"1";
+      this.style.background=on?"#000":"#1a2d4a";
+      this.style.color=on?"#4a6a8a":"#FFD700";
+      this.style.borderColor=on?"#1a2d4a":"#FFD700";
+    };
+  });
+  el("sp-submit").onclick=function(){
+    var msg=el("sp-msg"), dateV=el("sp-date"), notes=el("sp-notes");
+    var weights=[];
+    document.querySelectorAll(".w-btn[data-on='1']").forEach(function(b){weights.push({weight:b.dataset.w,sex:"M"});});
+    var phone = gym?gym.phone:(athlete?athlete.phone:"");
+    var post={
+      gymId:user.id, gymName:gym?gym.name:(athlete?athlete.name:""),
+      country:user.country||"USA", state:user.state||"", city:user.city||"",
+      phone:phone||"",
+      date:dateV?dateV.value:"",
+      notes:notes?notes.value.trim():"",
+      athletes:weights,
+      createdAt:Date.now()
+    };
+    if(msg)msg.innerHTML='<span style="color:#FFD700">'+L("Publicando...","Posting...")+'</span>';
+    fbPush("posts",post,function(ok){if(ok)closeM(); else if(msg)msg.innerHTML='<span style="color:#e74c3c">Error</span>';});
+  };
+});
+
+// ── EVENTOS ───────────────────────────────────────────────────────────────
+function renderEventos(){
+  var cont=el("ev-list"); if(!cont) return;
+  var h="";
+  if(!allEvents.length){
+    h='<div style="text-align:center;padding:40px 20px"><div style="font-size:48px;margin-bottom:12px">🏆</div><div style="font-size:16px;font-weight:800;color:#FFD700">'+L("Sin eventos","No events")+'</div></div>';
+  } else {
+    allEvents.forEach(function(ev){
+      h+='<div class="card" style="margin-bottom:10px;border-left:3px solid #FFD700">';
+      h+='<div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px">'+xe(ev.title)+'</div>';
+      h+='<div style="font-size:11px;color:#FFD700;margin-bottom:4px">📅 '+xe(ev.date)+(ev.city?" • 📍"+xe(ev.city):"")+'</div>';
+      if(ev.desc)h+='<div style="font-size:12px;color:#8a9aaa">'+xe(ev.desc)+'</div>';
+      h+='</div>';
+    });
+  }
+  // USA Boxing news events
+  h+='<div class="sec-hdr">📰 USA BOXING EVENTOS OFICIALES</div>';
+  h+='<div id="usa-ev-list"><div style="text-align:center;font-size:12px;color:#4a6a8a;padding:10px">Cargando...</div></div>';
+  cont.innerHTML=h;
+  loadUSAEvents();
+}
+
+function loadUSAEvents(){
+  var cont=el("usa-ev-list"); if(!cont) return;
+  var RSS="https://rss.app/feeds/IXCBLERcgy93hqDn.xml";
+  fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(RSS))
+    .then(function(r){return r.text();})
+    .then(function(xml){
+      var h="";
+      var matches=xml.match(/<item>[\s\S]*?<\/item>/g)||[];
+      matches.slice(0,5).forEach(function(item){
+        var t=(item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)||item.match(/<title>(.*?)<\/title>/))||[];
+        var l=(item.match(/<link>(.*?)<\/link>/))||[];
+        var d=(item.match(/<pubDate>(.*?)<\/pubDate>/))||[];
+        if(t[1]){
+          h+='<div class="card" style="margin-bottom:8px;cursor:pointer" onclick="window.open(\''+xe(l[1]||"#")+'\',\'_blank\')">';
+          h+='<div style="font-size:10px;color:#FFD700;margin-bottom:4px">'+xe((d[1]||"").substr(0,16))+'</div>';
+          h+='<div style="font-size:13px;font-weight:700;color:#fff">'+xe(t[1])+'</div>';
+          h+='<div style="font-size:11px;color:#4a8aff;margin-top:4px">VER ↗</div></div>';
+        }
+      });
+      if(cont) cont.innerHTML=h||'<div style="text-align:center;font-size:12px;color:#4a6a8a;padding:10px">Sin datos</div>';
+    }).catch(function(){ if(cont)cont.innerHTML=''; });
+}
+
+el("new-ev-btn") && (el("new-ev-btn").onclick=function(){
+  var user=gym||athlete; if(!user){showM('<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:12px">'+L("Regístrate primero","Register first")+'</div><button class="btn-y" onclick="closeM()">OK</button>');return;}
+  var h='<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">🏆 '+L("NUEVO EVENTO","NEW EVENT")+'</div>';
+  h+='<div style="margin-bottom:10px"><label class="lbl">'+L("TITULO *","TITLE *")+'</label><input class="inp" id="ev-title" placeholder="Torneo Las Vegas Open 2026"></div>';
+  h+='<div style="margin-bottom:10px"><label class="lbl">FECHA</label><input class="inp" type="date" id="ev-date"></div>';
+  h+='<div style="margin-bottom:10px"><label class="lbl">CIUDAD</label><input class="inp" id="ev-city" placeholder="Las Vegas, NV"></div>';
+  h+='<div style="margin-bottom:14px"><label class="lbl">DESCRIPCIÓN</label><textarea class="inp" id="ev-desc" style="height:70px;resize:none" placeholder="Detalles del evento..."></textarea></div>';
+  h+='<button id="ev-submit" class="btn-y">'+L("PUBLICAR EVENTO","POST EVENT")+'</button>';
+  h+='<div id="ev-msg" style="text-align:center;font-size:12px;margin-top:8px"></div>';
+  showM(h);
+  el("ev-submit").onclick=function(){
+    var msg=el("ev-msg"),title=el("ev-title");
+    if(!title||!title.value.trim()){if(msg)msg.innerHTML='<span style="color:#e74c3c">'+L("Ingresa el título","Enter title")+'</span>';return;}
+    var ev={gymId:user.id,gymName:gym?gym.name:(athlete?athlete.name:""),title:title.value.trim(),date:el("ev-date")?el("ev-date").value:"",city:el("ev-city")?el("ev-city").value.trim():"",desc:el("ev-desc")?el("ev-desc").value.trim():"",createdAt:Date.now()};
+    if(msg)msg.innerHTML='<span style="color:#FFD700">'+L("Publicando...","Posting...")+'</span>';
+    fbPush("events",ev,function(ok){if(ok)closeM();else if(msg)msg.innerHTML='<span style="color:#e74c3c">Error</span>';});
+  };
+});
+
+// ── ATLETAS ───────────────────────────────────────────────────────────────
+function renderAthletes(){
+  var cont=el("ath-list"); if(!cont) return;
+  if(!allAthletes.length){
+    cont.innerHTML='<div style="text-align:center;padding:40px 20px"><div style="font-size:48px;margin-bottom:12px">👤</div><div style="font-size:16px;font-weight:800;color:#FFD700">'+L("Sin atletas registrados","No athletes registered")+'</div></div>';
+    return;
+  }
+  var h="";
+  allAthletes.forEach(function(a){
+    var init=(a.name||"?").split(" ").map(function(x){return(x[0]||"").toUpperCase();}).slice(0,2).join("");
+    h+='<div class="ath-card">';
+    h+='<div class="ath-av">';
+    if(a.photo) h+='<img src="'+a.photo+'" style="width:100%;height:100%;object-fit:cover">';
+    else h+='<span style="color:#FFD700;font-weight:900">'+init+'</span>';
+    h+='</div>';
+    h+='<div style="flex:1;min-width:0">';
+    h+='<div style="font-size:15px;font-weight:800;color:#fff">'+xe(a.name)+'</div>';
+    h+='<div style="font-size:11px;color:#4a6a8a;margin-top:2px">'+xe(a.weight)+'lb • '+(a.sex==="M"?L("Hombre","Male"):L("Mujer","Female"))+(a.age?" • "+a.age+" "+L("años","yrs"):"")+' • '+xe(a.gymName||a.country||"")+'</div>';
+    h+='<div style="font-size:12px;font-weight:900;margin-top:4px"><span style="color:#27ae60">'+(a.wins||0)+'W </span><span style="color:#e74c3c">'+(a.losses||0)+'L </span><span style="color:#4a6a8a">'+(a.draws||0)+'D</span></div>';
+    if(a.social&&(a.social.instagram||a.social.tiktok)){
+      h+='<div style="display:flex;gap:6px;margin-top:6px">';
+      if(a.social.instagram)h+='<a href="https://instagram.com/'+xe(a.social.instagram)+'" target="_blank" style="background:#e1306c;color:#fff;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:700;text-decoration:none">📷 IG</a>';
+      if(a.social.tiktok)h+='<a href="https://tiktok.com/@'+xe(a.social.tiktok)+'" target="_blank" style="background:#000;color:#fff;border:1px solid #fff;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:700;text-decoration:none">▶ TT</a>';
+      h+='</div>';
+    }
+    h+='</div></div>';
+  });
+  cont.innerHTML=h;
+}
+
+el("new-ath-btn") && (el("new-ath-btn").onclick=function(){
+  var user=gym||athlete; if(!user){showM('<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:12px">'+L("Regístrate primero","Register first")+'</div><button class="btn-y" onclick="closeM()">OK</button>');return;}
+  var h='<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">👤 '+L("REGISTRAR ATLETA","REGISTER ATHLETE")+'</div>';
+  h+='<div style="margin-bottom:10px"><label class="lbl">NOMBRE *</label><input class="inp" id="na-name" placeholder="'+L("Nombre del atleta","Athlete name")+'"></div>';
+  h+='<div style="margin-bottom:10px"><label class="lbl">FECHA NACIMIENTO</label><input class="inp" type="date" id="na-dob"></div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  h+='<div><label class="lbl">PESO lb *</label><select class="sel" id="na-weight"><option value="">Selecciona</option>';
+  WEIGHTS.forEach(function(w){h+='<option>'+w+'</option>';});
+  h+='</select></div><div><label class="lbl">SEXO</label><select class="sel" id="na-sex"><option value="M">Hombre</option><option value="F">Mujer</option></select></div></div>';
+  h+='<button id="na-submit" class="btn-y">REGISTRAR</button>';
+  h+='<div id="na-msg" style="text-align:center;font-size:12px;margin-top:8px"></div>';
+  showM(h);
+  el("na-submit").onclick=function(){
+    var msg=el("na-msg"),name=el("na-name"),wt=el("na-weight"),dob=el("na-dob"),sex=el("na-sex");
+    if(!name||!name.value.trim()||!wt||!wt.value){if(msg)msg.innerHTML='<span style="color:#e74c3c">Rellena nombre y peso</span>';return;}
+    var age=null;
+    if(dob&&dob.value){var b=new Date(dob.value),t=new Date();age=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth())age--;}
+    var ath={id:uid(),gymId:user.id,gymName:gym?gym.name:(athlete?athlete.name:""),name:name.value.trim(),dob:dob?dob.value:"",age:age,weight:wt.value,sex:sex?sex.value:"M",wins:0,losses:0,draws:0,createdAt:Date.now()};
+    if(msg)msg.innerHTML='<span style="color:#FFD700">Registrando...</span>';
+    fdb?fdb.ref("athletes/"+ath.id).set(ath).then(function(){closeM();}).catch(function(){closeM();}):closeM();
+  };
+});
+
+// ── FEED ──────────────────────────────────────────────────────────────────
+function renderFeed(){
+  var cont=el("feed-list"); if(!cont) return;
+  if(!allFeedPosts.length){
+    cont.innerHTML='<div style="text-align:center;padding:40px 20px"><div style="font-size:48px;margin-bottom:12px">🌍</div><div style="font-size:16px;font-weight:800;color:#FFD700">'+L("Sé el primero en publicar","Be the first to post")+'</div></div>';
+    return;
+  }
+  var h="";
+  allFeedPosts.forEach(function(p){
+    h+='<div class="post-card" style="margin-bottom:10px">';
+    h+='<div style="display:flex;align-items:center;gap:10px;padding:12px">';
+    h+='<div style="width:40px;height:40px;border-radius:10px;background:#1a2d4a;display:flex;align-items:center;justify-content:center;font-weight:900;color:#FFD700;flex-shrink:0">'+(p.gymName||"?").charAt(0).toUpperCase()+'</div>';
+    h+='<div><div style="font-weight:800;color:#fff;font-size:14px">'+xe(p.gymName)+'</div>';
+    h+='<div style="font-size:10px;color:#4a6a8a">'+ago(p.createdAt)+(p.country?" • "+xe(p.country):"")+'</div></div></div>';
+    if(p.photo)h+='<img src="'+p.photo+'" style="width:100%;max-height:350px;object-fit:cover">';
+    if(p.text)h+='<div style="padding:12px;font-size:14px;color:#ddd;line-height:1.5">'+xe(p.text)+'</div>';
+    h+='<div style="display:flex;padding:6px 12px;border-top:1px solid #1a2d4a;gap:16px">';
+    var liked=gym&&p.likes&&p.likes[gym.id];
+    h+='<button onclick="toggleFeedLike(\''+xe(p.id)+'\')" style="background:none;border:none;cursor:pointer;color:'+(liked?"#e74c3c":"#4a6a8a")+';font-size:13px;font-weight:700">'+(liked?"❤️":"🤍")+" "+(p.likesCount||0)+'</button>';
+    h+='<button onclick="showFeedComments(\''+xe(p.id)+'\')" style="background:none;border:none;cursor:pointer;color:#4a6a8a;font-size:13px;font-weight:700">💬 '+(p.commentCount||0)+'</button>';
+    h+='</div></div>';
+  });
+  cont.innerHTML=h;
+}
+
+function toggleFeedLike(postId){
+  var user=gym||athlete; if(!user){return;}
+  if(!fdb)return;
+  var ref=fdb.ref("communityPosts/"+postId);
+  ref.once("value",function(s){
+    var p=s.val(); if(!p)return;
+    var likes=p.likes||{},count=p.likesCount||0;
+    if(likes[user.id]){delete likes[user.id];count=Math.max(0,count-1);}
+    else{likes[user.id]=true;count++;}
+    ref.update({likes:likes,likesCount:count});
+  });
+}
+
+function showFeedComments(postId){
+  if(!fdb)return;
+  fdb.ref("communityPosts/"+postId+"/comments").once("value",function(s){
+    var comments=[]; s.forEach(function(c){comments.push(c.val());});
+    var h='<div style="font-size:17px;font-weight:900;color:#FFD700;margin-bottom:14px">💬 '+L("Comentarios","Comments")+'</div>';
+    if(!comments.length)h+='<div style="text-align:center;color:#4a6a8a;font-size:13px;padding:20px">'+L("Sin comentarios aún","No comments yet")+'</div>';
+    comments.forEach(function(cm){
+      h+='<div style="background:#000;border-radius:10px;padding:10px;margin-bottom:8px;border-left:3px solid #FFD700">';
+      h+='<div style="font-weight:700;color:#FFD700;font-size:12px">'+xe(cm.gymName)+'</div>';
+      h+='<div style="color:#ddd;font-size:13px;margin-top:4px">'+xe(cm.text)+'</div></div>';
+    });
+    var user=gym||athlete;
+    if(user){
+      h+='<textarea class="inp" id="nc-text" placeholder="'+L("Escribe un comentario...","Write a comment...")+'" style="height:70px;resize:none;margin-top:10px"></textarea>';
+      h+='<button class="btn-y" style="margin-top:8px" onclick="submitFeedComment(\''+postId+'\')">'+L("COMENTAR","COMMENT")+'</button>';
+    }
+    showM(h);
+  });
+}
+
+function submitFeedComment(postId){
+  var user=gym||athlete; if(!user||!fdb)return;
+  var nc=el("nc-text"); if(!nc||!nc.value.trim())return;
+  var cm={gymId:user.id,gymName:gym?gym.name:(athlete?athlete.name:""),text:nc.value.trim(),createdAt:Date.now()};
+  fdb.ref("communityPosts/"+postId+"/comments").push(cm);
+  fdb.ref("communityPosts/"+postId).once("value",function(s){
+    var cnt=(s.val()&&s.val().commentCount)||0;
+    fdb.ref("communityPosts/"+postId).update({commentCount:cnt+1});
+  });
+  closeM();
+}
+
+el("new-post-btn") && (el("new-post-btn").onclick=function(){
+  var user=gym||athlete; if(!user){showM('<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:12px">'+L("Regístrate primero","Register first")+'</div><button class="btn-y" onclick="closeM()">OK</button>');return;}
+  var _photo=null;
+  var h='<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">🌍 '+L("NUEVA PUBLICACIÓN","NEW POST")+'</div>';
+  h+='<div id="post-prev" style="width:100%;height:160px;background:#111;border-radius:12px;border:2px dashed #1a2d4a;display:flex;align-items:center;justify-content:center;margin-bottom:10px;overflow:hidden;font-size:36px;color:#3a4a5a">📷</div>';
+  h+='<label style="display:block;background:#000;border:2px solid #FFD700;color:#FFD700;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;text-align:center;margin-bottom:10px">📷 '+L("AGREGAR FOTO","ADD PHOTO")+'<input type="file" id="fp-inp" accept="image/*" style="display:none" capture="environment"></label>';
+  h+='<textarea class="inp" id="fp-text" placeholder="'+L("¿Qué está pasando en tu gym?","What\'s happening at your gym?")+'" style="height:80px;resize:none;margin-bottom:14px"></textarea>';
+  h+='<button id="fp-submit" class="btn-y">'+L("PUBLICAR","POST")+'</button>';
+  h+='<div id="fp-msg" style="text-align:center;font-size:12px;margin-top:8px"></div>';
+  showM(h);
+  setTimeout(function(){
+    var inp=el("fp-inp");
+    if(inp)inp.onchange=function(){
+      var file=this.files[0]; if(!file)return;
+      var reader=new FileReader();
+      reader.onload=function(e){
+        var img=new Image();
+        img.onload=function(){
+          var canvas=document.createElement("canvas");
+          var MAX=600,w=img.width,h2=img.height;
+          if(w>h2){if(w>MAX){h2=h2*(MAX/w);w=MAX;}}else{if(h2>MAX){w=w*(MAX/h2);h2=MAX;}}
+          canvas.width=w;canvas.height=h2;
+          canvas.getContext("2d").drawImage(img,0,0,w,h2);
+          _photo=canvas.toDataURL("image/jpeg",0.75);
+          var prev=el("post-prev");
+          if(prev)prev.innerHTML='<img src="'+_photo+'" style="width:100%;height:100%;object-fit:cover">';
+        };img.src=e.target.result;
+      };reader.readAsDataURL(file);
+    };
+    el("fp-submit").onclick=function(){
+      var msg=el("fp-msg"),text=el("fp-text");
+      if(!_photo&&(!text||!text.value.trim())){if(msg)msg.innerHTML='<span style="color:#e74c3c">'+L("Agrega foto o texto","Add photo or text")+'</span>';return;}
+      if(msg)msg.innerHTML='<span style="color:#FFD700">'+L("Publicando...","Posting...")+'</span>';
+      var post={gymId:user.id,gymName:gym?gym.name:(athlete?athlete.name:""),country:user.country||"USA",state:user.state||"",text:text?text.value.trim():"",photo:_photo||null,likesCount:0,commentCount:0,likes:{},createdAt:Date.now()};
+      fbPush("communityPosts",post,function(ok){if(ok){_photo=null;closeM();}else if(msg)msg.innerHTML='<span style="color:#e74c3c">Error</span>';});
+    };
+  },100);
+});
+
+// ── TIMER ─────────────────────────────────────────────────────────────────
+var TM={run:false,iv:null,sec:0,round:0,total:0,wSec:0,rSec:0,work:true};
+function showTimer(){
+  var h='<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">⏱️ CRONÓMETRO</div>';
+  h+='<div style="text-align:center;margin-bottom:16px">';
+  h+='<div id="tm-display" style="font-size:72px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums">3:00</div>';
+  h+='<div id="tm-info" style="font-size:14px;color:#4a6a8a;margin-top:4px">Asalto 0 / 0</div></div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
+  h+='<div><label class="lbl">MODO</label><select class="sel" id="tm-mode"><option value="3-1-12">Amateur (3min/1min)</option><option value="2-1-8">Sub-16 (2min/1min)</option><option value="3-1-6">Pro (3min/1min)</option></select></div>';
+  h+='<div><label class="lbl">ASALTOS</label><input class="inp" type="number" id="tm-rounds" value="3" min="1" max="12"></div></div>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:10px">';
+  h+='<button id="tm-start" class="btn-y" style="flex:1">▶ INICIAR</button>';
+  h+='<button id="tm-stop" class="btn-dark" style="flex:1">⏹ PARAR</button></div>';
+  h+='<div id="tm-phase" style="text-align:center;font-size:18px;font-weight:900;color:#27ae60;min-height:26px">LISTO</div>';
+  showM(h);
+  function updateDisplay(){
+    var m=Math.floor(TM.sec/60),s=TM.sec%60;
+    var e=el("tm-display"); if(e)e.textContent=m+":"+(s<10?"0":"")+s;
+    var i=el("tm-info"); if(i)i.textContent=L("Asalto","Round")+" "+TM.round+" / "+TM.total;
+    var p=el("tm-phase");
+    if(p)p.textContent=TM.work?L("COMBATE","FIGHT"):L("DESCANSO","REST");
+    if(p)p.style.color=TM.work?"#e74c3c":"#27ae60";
+  }
+  function bell(n){
+    try{
+      var ctx=new(window.AudioContext||window.webkitAudioContext)();
+      for(var i=0;i<n;i++){
+        (function(d){
+          var o=ctx.createOscillator(),g=ctx.createGain();
+          o.connect(g);g.connect(ctx.destination);
+          o.frequency.value=720;
+          g.gain.setValueAtTime(0,ctx.currentTime+d);
+          g.gain.linearRampToValueAtTime(0.8,ctx.currentTime+d+.01);
+          g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d+1.2);
+          o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+1.5);
+        })(i*0.6);
+      }
+    }catch(e){}
+  }
+  el("tm-start").onclick=function(){
+    if(TM.run)return;
+    var mode=(el("tm-mode")||{}).value||"3-1-12";
+    var parts=mode.split("-");
+    TM.wSec=parseInt(parts[0])*60;
+    TM.rSec=parseInt(parts[1])*60;
+    TM.total=parseInt(el("tm-rounds").value)||3;
+    TM.round=1;TM.work=true;TM.sec=TM.wSec;TM.run=true;
+    bell(2);updateDisplay();
+    TM.iv=setInterval(function(){
+      TM.sec--;
+      if(TM.sec<=0){
+        if(TM.work){
+          if(TM.round>=TM.total){clearInterval(TM.iv);TM.run=false;TM.sec=0;bell(3);updateDisplay();var p=el("tm-phase");if(p)p.textContent="FIN";return;}
+          TM.work=false;TM.sec=TM.rSec;bell(1);
+        }else{TM.round++;TM.work=true;TM.sec=TM.wSec;bell(2);}
+      }
+      updateDisplay();
+    },1000);
+  };
+  el("tm-stop").onclick=function(){clearInterval(TM.iv);TM.run=false;TM.sec=0;TM.round=0;updateDisplay();var p=el("tm-phase");if(p)p.textContent="LISTO";};
+}
+
+// ── LIVE FIGHTS ───────────────────────────────────────────────────────────
+function showLiveFights(){
+  var channels=[
+    {name:"USA Boxing",desc:"Oficial — torneos nacionales",url:"https://www.youtube.com/results?search_query=usa+boxing+official+live",color:"#e74c3c"},
+    {name:"Top Rank Boxing",desc:"Peleas pro en vivo",url:"https://www.youtube.com/results?search_query=top+rank+boxing+live",color:"#c0392b"},
+    {name:"Matchroom Boxing",desc:"Eddie Hearn — internacional",url:"https://www.youtube.com/results?search_query=matchroom+boxing+live",color:"#2c3e50"},
+    {name:"DAZN Boxing",desc:"Canelo, GGG y más",url:"https://www.youtube.com/results?search_query=dazn+boxing+live",color:"#000080"},
+    {name:"ESPN Boxing",desc:"ESPN — Pro americano",url:"https://www.youtube.com/results?search_query=espn+boxing+live",color:"#d00"},
+    {name:"Netflix Boxing",desc:"Documentales y peleas",url:"https://www.netflix.com/search?q=boxing",color:"#e50914"}
+  ];
+  var h='<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">📺 PELEAS EN VIVO</div>';
+  channels.forEach(function(ch){
+    h+='<div style="background:#000;border:1px solid #1a2d4a;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="window.open(\''+ch.url+'\',\'_blank\')">';
+    h+='<div style="width:40px;height:40px;border-radius:10px;background:'+ch.color+';display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">▶</div>';
+    h+='<div style="flex:1"><div style="font-weight:700;color:#fff;font-size:13px">'+ch.name+'</div>';
+    h+='<div style="font-size:11px;color:#4a6a8a;margin-top:2px">'+ch.desc+'</div></div>';
+    h+='<span style="color:#FFD700;font-size:18px">›</span></div>';
+  });
+  showM(h);
+}
+
+// ── STORE ─────────────────────────────────────────────────────────────────
+function showStore(){
+  var TAG="osvimerboxing-20";
+  function amz(q){return "https://www.amazon.com/s?k="+encodeURIComponent(q)+"&tag="+TAG;}
+  var cats=[
+    {ic:"🥊",name:"Guantes",brands:["Everlast","Adidas","Hayabusa","Venum","Rival","Ringside","Title","Cleto Reyes","Fairtex","RDX"]},
+    {ic:"🪖",name:"Cascos",brands:["Everlast","Adidas","Rival","Ringside","Title","Hayabusa","Venum"]},
+    {ic:"🩹",name:"Vendas",brands:["Everlast","Adidas","Rival","Title","Ringside","Venum"]},
+    {ic:"👟",name:"Calzado",brands:["Adidas","Nike","Everlast","Title","Rival"]},
+    {ic:"👕",name:"Shorts / Ropa",brands:["Everlast","Adidas","Nike","Venum","Rival","Title"]},
+    {ic:"🎯",name:"Sacos",brands:["Everlast","Title","Ringside","Rival","RDX"]},
+    {ic:"🏃",name:"Zapatos para Correr",brands:["Nike","Adidas","Brooks","New Balance","ASICS","Under Armour","Saucony","Hoka"]},
+    {ic:"🥤",name:"Nutrición",brands:["Optimum Nutrition","BSN","Muscle Milk","Gatorade","Clif Bar"]}
+  ];
+  var h='<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:4px">🛒 TIENDA DE BOXEO</div>';
+  h+='<div style="font-size:10px;color:#4a6a8a;margin-bottom:14px">Amazon • tag: '+TAG+'</div>';
+  cats.forEach(function(cat){
+    h+='<div style="margin-bottom:14px">';
+    h+='<div style="font-size:12px;font-weight:900;color:#FFD700;margin-bottom:8px;letter-spacing:1px">'+cat.ic+' '+cat.name.toUpperCase()+'</div>';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+    cat.brands.forEach(function(b){
+      var q=b+" "+cat.name+" boxing";
+      h+='<div style="background:#000;border:1px solid #1a2d4a;border-radius:10px;padding:10px;cursor:pointer" onclick="window.open(\''+amz(q)+'\',\'_blank\')">';
+      h+='<div style="font-size:12px;font-weight:700;color:#fff">'+b+'</div>';
+      h+='<div style="font-size:9px;color:#FFD700;margin-top:4px">VER EN AMAZON ↗</div></div>';
+    });
+    h+='</div></div>';
+  });
+  showM(h);
+}
+
+// ── WEIGHT POLICY ─────────────────────────────────────────────────────────
+function showWeightPolicy(){
+  var h='<div style="font-size:18px;font-weight:900;color:#e74c3c;margin-bottom:14px">⚖️ POLÍTICA DE PESOS</div>';
+  h+='<div style="background:#1a0000;border:2px solid #e74c3c;border-radius:12px;padding:14px;margin-bottom:14px">';
+  h+='<div style="font-size:16px;font-weight:900;color:#e74c3c;text-align:center;margin-bottom:8px">⚠️ MÁXIMO 2-3 LIBRAS DE DIFERENCIA</div>';
+  h+='<div style="font-size:13px;color:#fff;text-align:center">Esta regla es NO NEGOCIABLE para la seguridad de todos los atletas.</div></div>';
+  h+='<div style="font-size:13px;color:#ccc;line-height:1.8">'+L("La diferencia máxima de peso entre atletas no puede exceder 3 libras. Esto está basado en las reglas de USA Boxing y es para proteger la seguridad de todos los participantes.","The maximum weight difference between athletes cannot exceed 3 pounds. This is based on USA Boxing rules and is to protect the safety of all participants.")+'</div>';
+  showM(h);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+window.addEventListener("DOMContentLoaded",function(){
+  gym = ld("bcu_gym",null);
+  athlete = ld("bcu_athlete",null);
+  initFB();
+  if(gym||athlete){
+    launch();
+  } else {
+    showReg();
+  }
+});
+</script>
+</body>
+</html>
