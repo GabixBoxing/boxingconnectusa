@@ -1974,6 +1974,829 @@ function showMN(html) {
 })();
 
 console.log("✅ Módulo Negocios cargado — Boxing Connect USA");
+</script><!-- ═══════════════════════════════════════════════════════════════════
+     MÓDULO ADMIN LIMPIEZA — PEGAR AL FINAL DEL ARCHIVO
+     ANTES DEL CIERRE </body>
+     PIN ADMIN: 1967
+     ═══════════════════════════════════════════════════════════════════ -->
+<script>
+// ═══════════════════════════════════════════════════════════════
+// PANEL DE ADMIN — LIMPIEZA Y GESTIÓN DE USUARIOS
+// Coach Osvimer Rodriguez — Boxing Connect USA
+// ═══════════════════════════════════════════════════════════════
+
+var ADMIN_CLEANUP_PIN = "1967";
+var _adminVerified = false;
+
+// ── Agregar botón ADMIN en el menú ────────────────────────────
+var _prevOpenMenu2 = typeof openMenu === "function" ? openMenu : null;
+if (_prevOpenMenu2) {
+  openMenu = function() {
+    _prevOpenMenu2();
+    // Inject admin button into menu after it renders
+    setTimeout(function() {
+      var mc = document.getElementById("menu-content");
+      if (!mc) return;
+      // Check if already injected
+      if (mc.querySelector("#admin-cleanup-btn")) return;
+      var adminBtn = document.createElement("button");
+      adminBtn.id = "admin-cleanup-btn";
+      adminBtn.onclick = function() { closeMenu(); showAdminCleanup(); };
+      adminBtn.style.cssText = "width:100%;background:#1a0000;border:2px solid #e74c3c;color:#e74c3c;border-radius:12px;padding:12px;font-weight:900;font-size:13px;cursor:pointer;margin-top:10px;letter-spacing:.5px";
+      adminBtn.textContent = "🔑 PANEL ADMIN — LIMPIAR APP";
+      mc.appendChild(adminBtn);
+    }, 50);
+  };
+}
+
+// ── Panel principal de admin ──────────────────────────────────
+function showAdminCleanup() {
+  if (!_adminVerified) {
+    var h = '<div style="text-align:center;margin-bottom:20px">'
+      + '<div style="font-size:40px;margin-bottom:8px">🔑</div>'
+      + '<div style="font-size:20px;font-weight:900;color:#FFD700">PANEL DE ADMIN</div>'
+      + '<div style="font-size:11px;color:#4a6a8a;margin-top:4px">Solo para el dueño de la app</div></div>';
+    h += '<div style="margin-bottom:14px"><label class="lbl">PIN DE ADMIN</label>'
+      + '<input type="password" class="inp" id="acp-pin" placeholder="••••" maxlength="6" style="font-size:24px;text-align:center;letter-spacing:8px"></div>';
+    h += '<button onclick="verifyCleanupPin()" class="btn-y" style="margin-bottom:8px">ENTRAR AL PANEL</button>';
+    h += '<div id="acp-msg" style="text-align:center;font-size:12px;margin-top:6px;min-height:16px"></div>';
+    showMC(h);
+    // Allow Enter key
+    setTimeout(function() {
+      var pinEl = document.getElementById("acp-pin");
+      if (pinEl) pinEl.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") verifyCleanupPin();
+      });
+    }, 100);
+  } else {
+    renderAdminCleanupPanel();
+  }
+}
+
+function verifyCleanupPin() {
+  var pinEl = document.getElementById("acp-pin");
+  var msg = document.getElementById("acp-msg");
+  if (!pinEl) return;
+  if (pinEl.value === ADMIN_CLEANUP_PIN) {
+    _adminVerified = true;
+    renderAdminCleanupPanel();
+  } else {
+    if (msg) msg.innerHTML = '<span style="color:#e74c3c">❌ PIN incorrecto</span>';
+    pinEl.value = "";
+    pinEl.focus();
+  }
+}
+
+function renderAdminCleanupPanel() {
+  if (!fdb) {
+    showMC('<div style="color:#e74c3c;font-size:14px;text-align:center;padding:20px">Sin conexión a Firebase</div><button onclick="closeM()" class="btn-y">Cerrar</button>');
+    return;
+  }
+
+  // Load all data
+  Promise.all([
+    fdb.ref("gyms").once("value"),
+    fdb.ref("athletes").once("value"),
+    fdb.ref("posts").once("value"),
+    fdb.ref("events").once("value"),
+    fdb.ref("communityPosts").once("value")
+  ]).then(function(results) {
+    var gyms = [], athletes = [], posts = [], events = [], feed = [];
+
+    results[0].forEach(function(c) { var v = c.val(); v.id = c.key; gyms.push(v); });
+    results[1].forEach(function(c) { var v = c.val(); v.id = c.key; athletes.push(v); });
+    results[2].forEach(function(c) { var v = c.val(); v.id = c.key; posts.push(v); });
+    results[3].forEach(function(c) { var v = c.val(); v.id = c.key; events.push(v); });
+    results[4].forEach(function(c) { var v = c.val(); v.id = c.key; feed.push(v); });
+
+    buildAdminPanelHTML(gyms, athletes, posts, events, feed);
+  }).catch(function(err) {
+    showMC('<div style="color:#e74c3c;font-size:14px;text-align:center;padding:20px">Error cargando datos</div><button onclick="closeM()" class="btn-y">Cerrar</button>');
+  });
+}
+
+function buildAdminPanelHTML(gyms, athletes, posts, events, feed) {
+  var h = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">';
+  h += '<div style="font-size:18px;font-weight:900;color:#FFD700">🔑 PANEL ADMIN</div>';
+  h += '<button onclick="renderAdminCleanupPanel()" style="background:#1a2d4a;border:none;color:#4a8aff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">🔄 RECARGAR</button></div>';
+
+  // Stats overview
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px">';
+  h += statBox(gyms.length, "GYMS", "#e74c3c");
+  h += statBox(athletes.length, "ATLETAS", "#4a8aff");
+  h += statBox(posts.length + feed.length, "POSTS", "#27ae60");
+  h += '</div>';
+
+  // ── HERRAMIENTAS RÁPIDAS ──────────────────────────────────
+  h += '<div style="font-size:10px;font-weight:900;color:#FFD700;letter-spacing:2px;margin-bottom:8px">⚡ HERRAMIENTAS RÁPIDAS</div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  h += quickBtn("🗑️ BORRAR TODO", "#e74c3c", "confirmBorrarTodo()");
+  h += quickBtn("👥 GYMS DUPLICADOS", "#e74c3c", "detectarDuplicados()");
+  h += quickBtn("🔄 MI SESIÓN", "#4a8aff", "limpiarMiSesion()");
+  h += quickBtn("📧 GYMS VACÍOS", "#FFD700", "borrarGimsVacios()");
+  h += '</div>';
+
+  // ── LISTA DE GYMS ─────────────────────────────────────────
+  h += sectionHdr("🏋️ GYMS REGISTRADOS (" + gyms.length + ")");
+  if (!gyms.length) {
+    h += emptyMsg("Sin gyms");
+  } else {
+    // Sort by createdAt
+    gyms.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    gyms.forEach(function(g) {
+      var isMine = (typeof gym !== "undefined" && gym && gym.id === g.id);
+      h += userRow(g.id, g.name || "Sin nombre",
+        (g.coach || "") + " • " + (g.city || "") + " • " + (g.phone || ""),
+        new Date(g.createdAt || 0).toLocaleDateString(),
+        isMine, "gym", "#e74c3c");
+    });
+  }
+
+  // ── LISTA DE ATLETAS ──────────────────────────────────────
+  h += sectionHdr("👤 ATLETAS REGISTRADOS (" + athletes.length + ")");
+  if (!athletes.length) {
+    h += emptyMsg("Sin atletas");
+  } else {
+    athletes.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    athletes.forEach(function(a) {
+      var isMine = (typeof athlete !== "undefined" && athlete && athlete.id === a.id);
+      h += userRow(a.id, a.name || "Sin nombre",
+        (a.weight || "") + "lb • " + (a.gymName || "") + " • " + (a.country || ""),
+        new Date(a.createdAt || 0).toLocaleDateString(),
+        isMine, "athlete", "#4a8aff");
+    });
+  }
+
+  // ── POSTS DE SPARRING ─────────────────────────────────────
+  h += sectionHdr("🥊 POSTS SPARRING (" + posts.length + ")");
+  if (!posts.length) {
+    h += emptyMsg("Sin posts");
+  } else {
+    posts.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    posts.slice(0, 20).forEach(function(p) {
+      h += postRow(p.id, p.gymName || "?", p.date || "", new Date(p.createdAt || 0).toLocaleDateString(), "post");
+    });
+    if (posts.length > 20) h += '<div style="text-align:center;color:#4a6a8a;font-size:11px;padding:6px">+ ' + (posts.length - 20) + ' más...</div>';
+  }
+
+  // ── FEED POSTS ────────────────────────────────────────────
+  h += sectionHdr("🌍 FEED POSTS (" + feed.length + ")");
+  if (!feed.length) {
+    h += emptyMsg("Sin posts");
+  } else {
+    feed.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    feed.slice(0, 15).forEach(function(p) {
+      h += postRow(p.id, p.gymName || "?", (p.text || "").substr(0, 40), new Date(p.createdAt || 0).toLocaleDateString(), "communityPost");
+    });
+    if (feed.length > 15) h += '<div style="text-align:center;color:#4a6a8a;font-size:11px;padding:6px">+ ' + (feed.length - 15) + ' más...</div>';
+  }
+
+  h += '<button onclick="closeM()" class="btn-dark" style="margin-top:14px">CERRAR PANEL</button>';
+  showMC(h);
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────
+function statBox(n, label, color) {
+  return '<div style="background:#000;border:1px solid ' + color + ';border-radius:10px;padding:10px;text-align:center">'
+    + '<div style="font-size:24px;font-weight:900;color:' + color + '">' + n + '</div>'
+    + '<div style="font-size:9px;color:#4a6a8a;letter-spacing:1px">' + label + '</div></div>';
+}
+function quickBtn(label, color, action) {
+  return '<button onclick="' + action + '" style="background:#000;border:2px solid ' + color + ';color:' + color + ';border-radius:10px;padding:10px;font-size:11px;font-weight:900;cursor:pointer">' + label + '</button>';
+}
+function sectionHdr(title) {
+  return '<div style="font-size:10px;font-weight:900;color:#FFD700;letter-spacing:1px;margin:12px 0 6px;border-bottom:1px solid #1a2d4a;padding-bottom:6px">' + title + '</div>';
+}
+function emptyMsg(msg) {
+  return '<div style="text-align:center;color:#4a6a8a;font-size:12px;padding:8px">' + msg + '</div>';
+}
+function userRow(id, name, sub, date, isMine, type, color) {
+  return '<div style="background:#000;border:1px solid ' + (isMine ? "#FFD700" : "#1a2d4a") + ';border-radius:10px;padding:10px;margin-bottom:6px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+    + '<div style="flex:1;min-width:0">'
+    + '<div style="font-weight:800;color:#fff;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+    + (isMine ? '<span style="background:#FFD700;color:#000;font-size:9px;padding:1px 5px;border-radius:4px;margin-right:4px;font-weight:900">TÚ</span>' : '')
+    + (typeof xe === "function" ? xe(name) : name) + '</div>'
+    + '<div style="font-size:10px;color:#4a6a8a;margin-top:2px">' + (typeof xe === "function" ? xe(sub) : sub) + '</div>'
+    + '<div style="font-size:10px;color:#3a4a5a;margin-top:2px">📅 ' + date + ' • ID: ' + id.substr(0,8) + '...</div></div>'
+    + '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">'
+    + (isMine ? '' : '<button onclick="confirmarEliminarUsuario(\'' + id + '\',\'' + type + '\',\'' + (typeof xe === "function" ? xe(name) : name).replace(/'/g,"\\'") + '\')" style="background:#1a0000;border:1px solid #e74c3c;color:#e74c3c;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap">🗑️ BORRAR</button>')
+    + '</div></div></div>';
+}
+function postRow(id, name, preview, date, type) {
+  return '<div style="background:#000;border:1px solid #1a2d4a;border-radius:8px;padding:8px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:8px">'
+    + '<div style="flex:1;min-width:0">'
+    + '<div style="font-size:12px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (typeof xe === "function" ? xe(name) : name) + '</div>'
+    + '<div style="font-size:10px;color:#4a6a8a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (typeof xe === "function" ? xe(preview) : preview) + '</div>'
+    + '<div style="font-size:9px;color:#3a4a5a">📅 ' + date + '</div></div>'
+    + '<button onclick="eliminarPost(\'' + id + '\',\'' + type + '\')" style="background:#1a0000;border:1px solid #e74c3c;color:#e74c3c;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">🗑️</button></div>';
+}
+
+// ── ACCIONES ──────────────────────────────────────────────────
+
+// Eliminar gym o atleta individual
+function confirmarEliminarUsuario(id, type, name) {
+  var path = type === "gym" ? "gyms/" : "athletes/";
+  var h = '<div style="text-align:center;padding:10px 0 20px">'
+    + '<div style="font-size:36px;margin-bottom:8px">⚠️</div>'
+    + '<div style="font-size:16px;font-weight:900;color:#e74c3c;margin-bottom:8px">ELIMINAR</div>'
+    + '<div style="font-size:15px;color:#fff;font-weight:700;margin-bottom:4px">' + name + '</div>'
+    + '<div style="font-size:12px;color:#4a6a8a;margin-bottom:20px">Esta acción no se puede deshacer</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="ejecutarEliminar(\'' + path + id + '\',\'' + id + '\',\'' + type + '\')" style="flex:1;background:#e74c3c;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">✅ SÍ, ELIMINAR</button>'
+    + '<button onclick="renderAdminCleanupPanel()" style="flex:1;background:#1a2d4a;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">❌ CANCELAR</button>'
+    + '</div></div>';
+  showMC(h);
+}
+
+function ejecutarEliminar(path, id, type) {
+  if (!fdb) return;
+  fdb.ref(path).remove().then(function() {
+    // If deleting current user's data, clear localStorage
+    if (type === "gym" && typeof gym !== "undefined" && gym && gym.id === id) {
+      localStorage.removeItem("bcu_gym");
+      gym = null;
+    }
+    if (type === "athlete" && typeof athlete !== "undefined" && athlete && athlete.id === id) {
+      localStorage.removeItem("bcu_athlete");
+      athlete = null;
+    }
+    showToastAdmin("✅ Eliminado correctamente");
+    renderAdminCleanupPanel();
+  }).catch(function() {
+    showToastAdmin("❌ Error al eliminar");
+    renderAdminCleanupPanel();
+  });
+}
+
+// Eliminar post
+function eliminarPost(id, type) {
+  if (!fdb || !confirm("¿Eliminar este post?")) return;
+  fdb.ref(type + "s/" + id).remove().then(function() {
+    showToastAdmin("✅ Post eliminado");
+    renderAdminCleanupPanel();
+  });
+}
+
+// Detectar duplicados (mismo nombre o teléfono)
+function detectarDuplicados() {
+  if (!fdb) return;
+  fdb.ref("gyms").once("value", function(s) {
+    var gyms = [], seen = {}, dupes = [];
+    s.forEach(function(c) { var v = c.val(); v.id = c.key; gyms.push(v); });
+
+    gyms.forEach(function(g) {
+      var key = (g.name || "").toLowerCase().trim() + "|" + (g.phone || "").replace(/\D/g,"");
+      if (seen[key]) {
+        dupes.push(g);
+      } else {
+        seen[key] = true;
+      }
+    });
+
+    var h = '<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">👥 GYMS DUPLICADOS</div>';
+
+    if (!dupes.length) {
+      h += '<div style="text-align:center;padding:20px;color:#27ae60;font-size:14px;font-weight:700">✅ No hay duplicados detectados</div>';
+    } else {
+      h += '<div style="font-size:12px;color:#e74c3c;margin-bottom:10px;font-weight:700">⚠️ Se encontraron ' + dupes.length + ' posibles duplicados:</div>';
+      dupes.forEach(function(g) {
+        h += '<div style="background:#1a0000;border:1px solid #e74c3c;border-radius:10px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px">';
+        h += '<div><div style="font-weight:800;color:#fff;font-size:13px">' + (typeof xe === "function" ? xe(g.name) : g.name) + '</div>';
+        h += '<div style="font-size:10px;color:#4a6a8a">' + (g.phone || "") + ' • ' + new Date(g.createdAt || 0).toLocaleDateString() + '</div></div>';
+        h += '<button onclick="ejecutarEliminar(\'gyms/' + g.id + '\',\'' + g.id + '\',\'gym\')" style="background:#e74c3c;border:none;color:#fff;border-radius:8px;padding:6px 12px;font-weight:900;font-size:12px;cursor:pointer">🗑️ BORRAR</button>';
+        h += '</div>';
+      });
+    }
+
+    h += '<button onclick="renderAdminCleanupPanel()" class="btn-dark" style="margin-top:10px">← VOLVER</button>';
+    showMC(h);
+  });
+}
+
+// Borrar gyms sin nombre ni teléfono
+function borrarGimsVacios() {
+  if (!fdb) return;
+  fdb.ref("gyms").once("value", function(s) {
+    var vacios = [];
+    s.forEach(function(c) {
+      var v = c.val(); v.id = c.key;
+      if (!v.name || v.name.trim() === "" || (!v.phone && !v.coach)) vacios.push(v);
+    });
+
+    if (!vacios.length) {
+      showToastAdmin("✅ No hay gyms vacíos");
+      renderAdminCleanupPanel();
+      return;
+    }
+
+    if (confirm("¿Borrar " + vacios.length + " gym(s) sin datos completos?")) {
+      var promises = vacios.map(function(g) { return fdb.ref("gyms/" + g.id).remove(); });
+      Promise.all(promises).then(function() {
+        showToastAdmin("✅ " + vacios.length + " eliminados");
+        renderAdminCleanupPanel();
+      });
+    }
+  });
+}
+
+// Limpiar MI sesión local (sin borrar de Firebase)
+function limpiarMiSesion() {
+  var h = '<div style="text-align:center;padding:10px 0 20px">'
+    + '<div style="font-size:36px;margin-bottom:8px">🔄</div>'
+    + '<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:8px">LIMPIAR MI SESIÓN</div>'
+    + '<div style="font-size:13px;color:#ccc;margin-bottom:20px;line-height:1.5">Esto borra tu sesión guardada en este teléfono.<br>NO borra datos de Firebase.<br>Podrás registrarte de nuevo limpio.</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="ejecutarLimpiarSesion()" style="flex:1;background:#FFD700;border:none;color:#000;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">✅ LIMPIAR</button>'
+    + '<button onclick="renderAdminCleanupPanel()" style="flex:1;background:#1a2d4a;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">❌ CANCELAR</button>'
+    + '</div></div>';
+  showMC(h);
+}
+
+function ejecutarLimpiarSesion() {
+  localStorage.removeItem("bcu_gym");
+  localStorage.removeItem("bcu_athlete");
+  localStorage.removeItem("bcu_sound");
+  if (typeof gym !== "undefined") gym = null;
+  if (typeof athlete !== "undefined") athlete = null;
+  closeM();
+  showToastAdmin("✅ Sesión limpiada — recargando...");
+  setTimeout(function() { location.reload(); }, 1500);
+}
+
+// BORRAR TODO — opción nuclear
+function confirmBorrarTodo() {
+  var h = '<div style="text-align:center;padding:10px 0 20px">'
+    + '<div style="font-size:48px;margin-bottom:8px">💣</div>'
+    + '<div style="font-size:18px;font-weight:900;color:#e74c3c;margin-bottom:8px">BORRAR TODO</div>'
+    + '<div style="font-size:13px;color:#ccc;margin-bottom:6px;line-height:1.5">Esto borra <strong style="color:#e74c3c">TODOS</strong> los gyms, atletas y posts de la app.</div>'
+    + '<div style="font-size:12px;color:#e74c3c;margin-bottom:20px;font-weight:700">⚠️ ACCIÓN IRREVERSIBLE</div>'
+    + '<div style="margin-bottom:10px"><label class="lbl">CONFIRMA CON TU PIN</label>'
+    + '<input type="password" class="inp" id="bt-pin" placeholder="••••" maxlength="6" style="font-size:24px;text-align:center;letter-spacing:8px"></div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="ejecutarBorrarTodo()" style="flex:1;background:#e74c3c;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">💣 BORRAR TODO</button>'
+    + '<button onclick="renderAdminCleanupPanel()" style="flex:1;background:#1a2d4a;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">❌ CANCELAR</button>'
+    + '</div></div>';
+  showMC(h);
+}
+
+function ejecutarBorrarTodo() {
+  var pinEl = document.getElementById("bt-pin");
+  if (!pinEl || pinEl.value !== ADMIN_CLEANUP_PIN) {
+    showToastAdmin("❌ PIN incorrecto");
+    return;
+  }
+  if (!fdb) return;
+
+  var paths = ["gyms", "athletes", "posts", "events", "communityPosts"];
+  var promises = paths.map(function(p) { return fdb.ref(p).remove(); });
+
+  Promise.all(promises).then(function() {
+    localStorage.removeItem("bcu_gym");
+    localStorage.removeItem("bcu_athlete");
+    if (typeof gym !== "undefined") gym = null;
+    if (typeof athlete !== "undefined") athlete = null;
+    closeM();
+    showToastAdmin("✅ App limpiada completamente");
+    setTimeout(function() { location.reload(); }, 2000);
+  }).catch(function() {
+    showToastAdmin("❌ Error al borrar");
+  });
+}
+
+// ── TOAST ADMIN ───────────────────────────────────────────────
+function showToastAdmin(msg) {
+  var bar = document.getElementById("notif-bar") || document.body;
+  var d = document.createElement("div");
+  d.style.cssText = "position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#060e1c;border:2px solid #FFD700;color:#FFD700;padding:10px 20px;border-radius:12px;font-weight:900;z-index:9999;font-size:13px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)";
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(function() { try { d.remove(); } catch(e) {} }, 3000);
+}
+
+// ── MODAL HELPER ──────────────────────────────────────────────
+function showMC(html) {
+  var modal = document.getElementById("modal");
+  if (modal) {
+    modal.innerHTML = '<div class="modal-bg"><div class="modal-box">'
+      + '<div class="close-bar"><div style="font-size:12px;color:#FFD700;font-weight:700">🔑 ADMIN</div>'
+      + '<button class="close-x" onclick="closeM()">✕</button></div>'
+
+      <!-- ═══════════════════════════════════════════════════════════════════
+     MÓDULO ADMIN LIMPIEZA — PEGAR AL FINAL DEL ARCHIVO
+     ANTES DEL CIERRE </body>
+     PIN ADMIN: 1967
+     ═══════════════════════════════════════════════════════════════════ -->
+<script>
+// ═══════════════════════════════════════════════════════════════
+// PANEL DE ADMIN — LIMPIEZA Y GESTIÓN DE USUARIOS
+// Coach Osvimer Rodriguez — Boxing Connect USA
+// ═══════════════════════════════════════════════════════════════
+
+var ADMIN_CLEANUP_PIN = "1967";
+var _adminVerified = false;
+
+// ── Agregar botón ADMIN en el menú ────────────────────────────
+var _prevOpenMenu2 = typeof openMenu === "function" ? openMenu : null;
+if (_prevOpenMenu2) {
+  openMenu = function() {
+    _prevOpenMenu2();
+    // Inject admin button into menu after it renders
+    setTimeout(function() {
+      var mc = document.getElementById("menu-content");
+      if (!mc) return;
+      // Check if already injected
+      if (mc.querySelector("#admin-cleanup-btn")) return;
+      var adminBtn = document.createElement("button");
+      adminBtn.id = "admin-cleanup-btn";
+      adminBtn.onclick = function() { closeMenu(); showAdminCleanup(); };
+      adminBtn.style.cssText = "width:100%;background:#1a0000;border:2px solid #e74c3c;color:#e74c3c;border-radius:12px;padding:12px;font-weight:900;font-size:13px;cursor:pointer;margin-top:10px;letter-spacing:.5px";
+      adminBtn.textContent = "🔑 PANEL ADMIN — LIMPIAR APP";
+      mc.appendChild(adminBtn);
+    }, 50);
+  };
+}
+
+// ── Panel principal de admin ──────────────────────────────────
+function showAdminCleanup() {
+  if (!_adminVerified) {
+    var h = '<div style="text-align:center;margin-bottom:20px">'
+      + '<div style="font-size:40px;margin-bottom:8px">🔑</div>'
+      + '<div style="font-size:20px;font-weight:900;color:#FFD700">PANEL DE ADMIN</div>'
+      + '<div style="font-size:11px;color:#4a6a8a;margin-top:4px">Solo para el dueño de la app</div></div>';
+    h += '<div style="margin-bottom:14px"><label class="lbl">PIN DE ADMIN</label>'
+      + '<input type="password" class="inp" id="acp-pin" placeholder="••••" maxlength="6" style="font-size:24px;text-align:center;letter-spacing:8px"></div>';
+    h += '<button onclick="verifyCleanupPin()" class="btn-y" style="margin-bottom:8px">ENTRAR AL PANEL</button>';
+    h += '<div id="acp-msg" style="text-align:center;font-size:12px;margin-top:6px;min-height:16px"></div>';
+    showMC(h);
+    // Allow Enter key
+    setTimeout(function() {
+      var pinEl = document.getElementById("acp-pin");
+      if (pinEl) pinEl.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") verifyCleanupPin();
+      });
+    }, 100);
+  } else {
+    renderAdminCleanupPanel();
+  }
+}
+
+function verifyCleanupPin() {
+  var pinEl = document.getElementById("acp-pin");
+  var msg = document.getElementById("acp-msg");
+  if (!pinEl) return;
+  if (pinEl.value === ADMIN_CLEANUP_PIN) {
+    _adminVerified = true;
+    renderAdminCleanupPanel();
+  } else {
+    if (msg) msg.innerHTML = '<span style="color:#e74c3c">❌ PIN incorrecto</span>';
+    pinEl.value = "";
+    pinEl.focus();
+  }
+}
+
+function renderAdminCleanupPanel() {
+  if (!fdb) {
+    showMC('<div style="color:#e74c3c;font-size:14px;text-align:center;padding:20px">Sin conexión a Firebase</div><button onclick="closeM()" class="btn-y">Cerrar</button>');
+    return;
+  }
+
+  // Load all data
+  Promise.all([
+    fdb.ref("gyms").once("value"),
+    fdb.ref("athletes").once("value"),
+    fdb.ref("posts").once("value"),
+    fdb.ref("events").once("value"),
+    fdb.ref("communityPosts").once("value")
+  ]).then(function(results) {
+    var gyms = [], athletes = [], posts = [], events = [], feed = [];
+
+    results[0].forEach(function(c) { var v = c.val(); v.id = c.key; gyms.push(v); });
+    results[1].forEach(function(c) { var v = c.val(); v.id = c.key; athletes.push(v); });
+    results[2].forEach(function(c) { var v = c.val(); v.id = c.key; posts.push(v); });
+    results[3].forEach(function(c) { var v = c.val(); v.id = c.key; events.push(v); });
+    results[4].forEach(function(c) { var v = c.val(); v.id = c.key; feed.push(v); });
+
+    buildAdminPanelHTML(gyms, athletes, posts, events, feed);
+  }).catch(function(err) {
+    showMC('<div style="color:#e74c3c;font-size:14px;text-align:center;padding:20px">Error cargando datos</div><button onclick="closeM()" class="btn-y">Cerrar</button>');
+  });
+}
+
+function buildAdminPanelHTML(gyms, athletes, posts, events, feed) {
+  var h = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">';
+  h += '<div style="font-size:18px;font-weight:900;color:#FFD700">🔑 PANEL ADMIN</div>';
+  h += '<button onclick="renderAdminCleanupPanel()" style="background:#1a2d4a;border:none;color:#4a8aff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">🔄 RECARGAR</button></div>';
+
+  // Stats overview
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px">';
+  h += statBox(gyms.length, "GYMS", "#e74c3c");
+  h += statBox(athletes.length, "ATLETAS", "#4a8aff");
+  h += statBox(posts.length + feed.length, "POSTS", "#27ae60");
+  h += '</div>';
+
+  // ── HERRAMIENTAS RÁPIDAS ──────────────────────────────────
+  h += '<div style="font-size:10px;font-weight:900;color:#FFD700;letter-spacing:2px;margin-bottom:8px">⚡ HERRAMIENTAS RÁPIDAS</div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  h += quickBtn("🗑️ BORRAR TODO", "#e74c3c", "confirmBorrarTodo()");
+  h += quickBtn("👥 GYMS DUPLICADOS", "#e74c3c", "detectarDuplicados()");
+  h += quickBtn("🔄 MI SESIÓN", "#4a8aff", "limpiarMiSesion()");
+  h += quickBtn("📧 GYMS VACÍOS", "#FFD700", "borrarGimsVacios()");
+  h += '</div>';
+
+  // ── LISTA DE GYMS ─────────────────────────────────────────
+  h += sectionHdr("🏋️ GYMS REGISTRADOS (" + gyms.length + ")");
+  if (!gyms.length) {
+    h += emptyMsg("Sin gyms");
+  } else {
+    // Sort by createdAt
+    gyms.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    gyms.forEach(function(g) {
+      var isMine = (typeof gym !== "undefined" && gym && gym.id === g.id);
+      h += userRow(g.id, g.name || "Sin nombre",
+        (g.coach || "") + " • " + (g.city || "") + " • " + (g.phone || ""),
+        new Date(g.createdAt || 0).toLocaleDateString(),
+        isMine, "gym", "#e74c3c");
+    });
+  }
+
+  // ── LISTA DE ATLETAS ──────────────────────────────────────
+  h += sectionHdr("👤 ATLETAS REGISTRADOS (" + athletes.length + ")");
+  if (!athletes.length) {
+    h += emptyMsg("Sin atletas");
+  } else {
+    athletes.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    athletes.forEach(function(a) {
+      var isMine = (typeof athlete !== "undefined" && athlete && athlete.id === a.id);
+      h += userRow(a.id, a.name || "Sin nombre",
+        (a.weight || "") + "lb • " + (a.gymName || "") + " • " + (a.country || ""),
+        new Date(a.createdAt || 0).toLocaleDateString(),
+        isMine, "athlete", "#4a8aff");
+    });
+  }
+
+  // ── POSTS DE SPARRING ─────────────────────────────────────
+  h += sectionHdr("🥊 POSTS SPARRING (" + posts.length + ")");
+  if (!posts.length) {
+    h += emptyMsg("Sin posts");
+  } else {
+    posts.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    posts.slice(0, 20).forEach(function(p) {
+      h += postRow(p.id, p.gymName || "?", p.date || "", new Date(p.createdAt || 0).toLocaleDateString(), "post");
+    });
+    if (posts.length > 20) h += '<div style="text-align:center;color:#4a6a8a;font-size:11px;padding:6px">+ ' + (posts.length - 20) + ' más...</div>';
+  }
+
+  // ── FEED POSTS ────────────────────────────────────────────
+  h += sectionHdr("🌍 FEED POSTS (" + feed.length + ")");
+  if (!feed.length) {
+    h += emptyMsg("Sin posts");
+  } else {
+    feed.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+    feed.slice(0, 15).forEach(function(p) {
+      h += postRow(p.id, p.gymName || "?", (p.text || "").substr(0, 40), new Date(p.createdAt || 0).toLocaleDateString(), "communityPost");
+    });
+    if (feed.length > 15) h += '<div style="text-align:center;color:#4a6a8a;font-size:11px;padding:6px">+ ' + (feed.length - 15) + ' más...</div>';
+  }
+
+  h += '<button onclick="closeM()" class="btn-dark" style="margin-top:14px">CERRAR PANEL</button>';
+  showMC(h);
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────
+function statBox(n, label, color) {
+  return '<div style="background:#000;border:1px solid ' + color + ';border-radius:10px;padding:10px;text-align:center">'
+    + '<div style="font-size:24px;font-weight:900;color:' + color + '">' + n + '</div>'
+    + '<div style="font-size:9px;color:#4a6a8a;letter-spacing:1px">' + label + '</div></div>';
+}
+function quickBtn(label, color, action) {
+  return '<button onclick="' + action + '" style="background:#000;border:2px solid ' + color + ';color:' + color + ';border-radius:10px;padding:10px;font-size:11px;font-weight:900;cursor:pointer">' + label + '</button>';
+}
+function sectionHdr(title) {
+  return '<div style="font-size:10px;font-weight:900;color:#FFD700;letter-spacing:1px;margin:12px 0 6px;border-bottom:1px solid #1a2d4a;padding-bottom:6px">' + title + '</div>';
+}
+function emptyMsg(msg) {
+  return '<div style="text-align:center;color:#4a6a8a;font-size:12px;padding:8px">' + msg + '</div>';
+}
+function userRow(id, name, sub, date, isMine, type, color) {
+  return '<div style="background:#000;border:1px solid ' + (isMine ? "#FFD700" : "#1a2d4a") + ';border-radius:10px;padding:10px;margin-bottom:6px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+    + '<div style="flex:1;min-width:0">'
+    + '<div style="font-weight:800;color:#fff;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+    + (isMine ? '<span style="background:#FFD700;color:#000;font-size:9px;padding:1px 5px;border-radius:4px;margin-right:4px;font-weight:900">TÚ</span>' : '')
+    + (typeof xe === "function" ? xe(name) : name) + '</div>'
+    + '<div style="font-size:10px;color:#4a6a8a;margin-top:2px">' + (typeof xe === "function" ? xe(sub) : sub) + '</div>'
+    + '<div style="font-size:10px;color:#3a4a5a;margin-top:2px">📅 ' + date + ' • ID: ' + id.substr(0,8) + '...</div></div>'
+    + '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">'
+    + (isMine ? '' : '<button onclick="confirmarEliminarUsuario(\'' + id + '\',\'' + type + '\',\'' + (typeof xe === "function" ? xe(name) : name).replace(/'/g,"\\'") + '\')" style="background:#1a0000;border:1px solid #e74c3c;color:#e74c3c;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap">🗑️ BORRAR</button>')
+    + '</div></div></div>';
+}
+function postRow(id, name, preview, date, type) {
+  return '<div style="background:#000;border:1px solid #1a2d4a;border-radius:8px;padding:8px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:8px">'
+    + '<div style="flex:1;min-width:0">'
+    + '<div style="font-size:12px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (typeof xe === "function" ? xe(name) : name) + '</div>'
+    + '<div style="font-size:10px;color:#4a6a8a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (typeof xe === "function" ? xe(preview) : preview) + '</div>'
+    + '<div style="font-size:9px;color:#3a4a5a">📅 ' + date + '</div></div>'
+    + '<button onclick="eliminarPost(\'' + id + '\',\'' + type + '\')" style="background:#1a0000;border:1px solid #e74c3c;color:#e74c3c;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">🗑️</button></div>';
+}
+
+// ── ACCIONES ──────────────────────────────────────────────────
+
+// Eliminar gym o atleta individual
+function confirmarEliminarUsuario(id, type, name) {
+  var path = type === "gym" ? "gyms/" : "athletes/";
+  var h = '<div style="text-align:center;padding:10px 0 20px">'
+    + '<div style="font-size:36px;margin-bottom:8px">⚠️</div>'
+    + '<div style="font-size:16px;font-weight:900;color:#e74c3c;margin-bottom:8px">ELIMINAR</div>'
+    + '<div style="font-size:15px;color:#fff;font-weight:700;margin-bottom:4px">' + name + '</div>'
+    + '<div style="font-size:12px;color:#4a6a8a;margin-bottom:20px">Esta acción no se puede deshacer</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="ejecutarEliminar(\'' + path + id + '\',\'' + id + '\',\'' + type + '\')" style="flex:1;background:#e74c3c;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">✅ SÍ, ELIMINAR</button>'
+    + '<button onclick="renderAdminCleanupPanel()" style="flex:1;background:#1a2d4a;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">❌ CANCELAR</button>'
+    + '</div></div>';
+  showMC(h);
+}
+
+function ejecutarEliminar(path, id, type) {
+  if (!fdb) return;
+  fdb.ref(path).remove().then(function() {
+    // If deleting current user's data, clear localStorage
+    if (type === "gym" && typeof gym !== "undefined" && gym && gym.id === id) {
+      localStorage.removeItem("bcu_gym");
+      gym = null;
+    }
+    if (type === "athlete" && typeof athlete !== "undefined" && athlete && athlete.id === id) {
+      localStorage.removeItem("bcu_athlete");
+      athlete = null;
+    }
+    showToastAdmin("✅ Eliminado correctamente");
+    renderAdminCleanupPanel();
+  }).catch(function() {
+    showToastAdmin("❌ Error al eliminar");
+    renderAdminCleanupPanel();
+  });
+}
+
+// Eliminar post
+function eliminarPost(id, type) {
+  if (!fdb || !confirm("¿Eliminar este post?")) return;
+  fdb.ref(type + "s/" + id).remove().then(function() {
+    showToastAdmin("✅ Post eliminado");
+    renderAdminCleanupPanel();
+  });
+}
+
+// Detectar duplicados (mismo nombre o teléfono)
+function detectarDuplicados() {
+  if (!fdb) return;
+  fdb.ref("gyms").once("value", function(s) {
+    var gyms = [], seen = {}, dupes = [];
+    s.forEach(function(c) { var v = c.val(); v.id = c.key; gyms.push(v); });
+
+    gyms.forEach(function(g) {
+      var key = (g.name || "").toLowerCase().trim() + "|" + (g.phone || "").replace(/\D/g,"");
+      if (seen[key]) {
+        dupes.push(g);
+      } else {
+        seen[key] = true;
+      }
+    });
+
+    var h = '<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">👥 GYMS DUPLICADOS</div>';
+
+    if (!dupes.length) {
+      h += '<div style="text-align:center;padding:20px;color:#27ae60;font-size:14px;font-weight:700">✅ No hay duplicados detectados</div>';
+    } else {
+      h += '<div style="font-size:12px;color:#e74c3c;margin-bottom:10px;font-weight:700">⚠️ Se encontraron ' + dupes.length + ' posibles duplicados:</div>';
+      dupes.forEach(function(g) {
+        h += '<div style="background:#1a0000;border:1px solid #e74c3c;border-radius:10px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px">';
+        h += '<div><div style="font-weight:800;color:#fff;font-size:13px">' + (typeof xe === "function" ? xe(g.name) : g.name) + '</div>';
+        h += '<div style="font-size:10px;color:#4a6a8a">' + (g.phone || "") + ' • ' + new Date(g.createdAt || 0).toLocaleDateString() + '</div></div>';
+        h += '<button onclick="ejecutarEliminar(\'gyms/' + g.id + '\',\'' + g.id + '\',\'gym\')" style="background:#e74c3c;border:none;color:#fff;border-radius:8px;padding:6px 12px;font-weight:900;font-size:12px;cursor:pointer">🗑️ BORRAR</button>';
+        h += '</div>';
+      });
+    }
+
+    h += '<button onclick="renderAdminCleanupPanel()" class="btn-dark" style="margin-top:10px">← VOLVER</button>';
+    showMC(h);
+  });
+}
+
+// Borrar gyms sin nombre ni teléfono
+function borrarGimsVacios() {
+  if (!fdb) return;
+  fdb.ref("gyms").once("value", function(s) {
+    var vacios = [];
+    s.forEach(function(c) {
+      var v = c.val(); v.id = c.key;
+      if (!v.name || v.name.trim() === "" || (!v.phone && !v.coach)) vacios.push(v);
+    });
+
+    if (!vacios.length) {
+      showToastAdmin("✅ No hay gyms vacíos");
+      renderAdminCleanupPanel();
+      return;
+    }
+
+    if (confirm("¿Borrar " + vacios.length + " gym(s) sin datos completos?")) {
+      var promises = vacios.map(function(g) { return fdb.ref("gyms/" + g.id).remove(); });
+      Promise.all(promises).then(function() {
+        showToastAdmin("✅ " + vacios.length + " eliminados");
+        renderAdminCleanupPanel();
+      });
+    }
+  });
+}
+
+// Limpiar MI sesión local (sin borrar de Firebase)
+function limpiarMiSesion() {
+  var h = '<div style="text-align:center;padding:10px 0 20px">'
+    + '<div style="font-size:36px;margin-bottom:8px">🔄</div>'
+    + '<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:8px">LIMPIAR MI SESIÓN</div>'
+    + '<div style="font-size:13px;color:#ccc;margin-bottom:20px;line-height:1.5">Esto borra tu sesión guardada en este teléfono.<br>NO borra datos de Firebase.<br>Podrás registrarte de nuevo limpio.</div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="ejecutarLimpiarSesion()" style="flex:1;background:#FFD700;border:none;color:#000;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">✅ LIMPIAR</button>'
+    + '<button onclick="renderAdminCleanupPanel()" style="flex:1;background:#1a2d4a;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">❌ CANCELAR</button>'
+    + '</div></div>';
+  showMC(h);
+}
+
+function ejecutarLimpiarSesion() {
+  localStorage.removeItem("bcu_gym");
+  localStorage.removeItem("bcu_athlete");
+  localStorage.removeItem("bcu_sound");
+  if (typeof gym !== "undefined") gym = null;
+  if (typeof athlete !== "undefined") athlete = null;
+  closeM();
+  showToastAdmin("✅ Sesión limpiada — recargando...");
+  setTimeout(function() { location.reload(); }, 1500);
+}
+
+// BORRAR TODO — opción nuclear
+function confirmBorrarTodo() {
+  var h = '<div style="text-align:center;padding:10px 0 20px">'
+    + '<div style="font-size:48px;margin-bottom:8px">💣</div>'
+    + '<div style="font-size:18px;font-weight:900;color:#e74c3c;margin-bottom:8px">BORRAR TODO</div>'
+    + '<div style="font-size:13px;color:#ccc;margin-bottom:6px;line-height:1.5">Esto borra <strong style="color:#e74c3c">TODOS</strong> los gyms, atletas y posts de la app.</div>'
+    + '<div style="font-size:12px;color:#e74c3c;margin-bottom:20px;font-weight:700">⚠️ ACCIÓN IRREVERSIBLE</div>'
+    + '<div style="margin-bottom:10px"><label class="lbl">CONFIRMA CON TU PIN</label>'
+    + '<input type="password" class="inp" id="bt-pin" placeholder="••••" maxlength="6" style="font-size:24px;text-align:center;letter-spacing:8px"></div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button onclick="ejecutarBorrarTodo()" style="flex:1;background:#e74c3c;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">💣 BORRAR TODO</button>'
+    + '<button onclick="renderAdminCleanupPanel()" style="flex:1;background:#1a2d4a;border:none;color:#fff;border-radius:10px;padding:12px;font-weight:900;font-size:14px;cursor:pointer">❌ CANCELAR</button>'
+    + '</div></div>';
+  showMC(h);
+}
+
+function ejecutarBorrarTodo() {
+  var pinEl = document.getElementById("bt-pin");
+  if (!pinEl || pinEl.value !== ADMIN_CLEANUP_PIN) {
+    showToastAdmin("❌ PIN incorrecto");
+    return;
+  }
+  if (!fdb) return;
+
+  var paths = ["gyms", "athletes", "posts", "events", "communityPosts"];
+  var promises = paths.map(function(p) { return fdb.ref(p).remove(); });
+
+  Promise.all(promises).then(function() {
+    localStorage.removeItem("bcu_gym");
+    localStorage.removeItem("bcu_athlete");
+    if (typeof gym !== "undefined") gym = null;
+    if (typeof athlete !== "undefined") athlete = null;
+    closeM();
+    showToastAdmin("✅ App limpiada completamente");
+    setTimeout(function() { location.reload(); }, 2000);
+  }).catch(function() {
+    showToastAdmin("❌ Error al borrar");
+  });
+}
+
+// ── TOAST ADMIN ───────────────────────────────────────────────
+function showToastAdmin(msg) {
+  var bar = document.getElementById("notif-bar") || document.body;
+  var d = document.createElement("div");
+  d.style.cssText = "position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#060e1c;border:2px solid #FFD700;color:#FFD700;padding:10px 20px;border-radius:12px;font-weight:900;z-index:9999;font-size:13px;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5)";
+  d.textContent = msg;
+  document.body.appendChild(d);
+  setTimeout(function() { try { d.remove(); } catch(e) {} }, 3000);
+}
+
+// ── MODAL HELPER ──────────────────────────────────────────────
+function showMC(html) {
+  var modal = document.getElementById("modal");
+  if (modal) {
+    modal.innerHTML = '<div class="modal-bg"><div class="modal-box">'
+      + '<div class="close-bar"><div style="font-size:12px;color:#FFD700;font-weight:700">🔑 ADMIN</div>'
+      + '<button class="close-x" onclick="closeM()">✕</button></div>'
+      + html + '</div></div>';
+  }
+}
+
+console.log("✅ Módulo Admin Limpieza cargado — PIN: 1967");
 </script>
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
+
 <!-- ═══════════════════════════════════════════════════════════════════ -->
 
