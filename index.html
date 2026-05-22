@@ -1278,3 +1278,702 @@ window.addEventListener("DOMContentLoaded",function(){
 </script>
 </body>
 </html>
+<!-- ═══════════════════════════════════════════════════════════════════
+     MÓDULO NEGOCIOS — PEGAR AL FINAL DEL ARCHIVO boxing_connect_usa.html
+     ANTES DEL CIERRE </body>
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- 1. PÁGINA DE NEGOCIOS (agregar dentro de <div class="app" id="app">) -->
+<!-- INSTRUCCIÓN: pega este div ANTES del cierre </div> del app principal -->
+<div id="pg-negocios" class="pg">
+  <div class="hdr">
+    <div>
+      <div class="hdr-title">🏪 NEGOCIOS</div>
+      <div class="hdr-sub">DIRECTORIO PREMIUM • $9.99/mes</div>
+    </div>
+    <button onclick="showPublicarNegocio()" class="btn-y" style="padding:8px 14px;width:auto;font-size:13px">+ PUBLICAR</button>
+  </div>
+
+  <!-- Filtros de categoría -->
+  <div style="padding:10px 14px;display:flex;gap:6px;overflow-x:auto;padding-bottom:6px">
+    <button onclick="filterNegocios('Todos')" id="nf-Todos" style="background:#FFD700;color:#000;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:900;white-space:nowrap;cursor:pointer">TODOS</button>
+    <button onclick="filterNegocios('Gym')" id="nf-Gym" style="background:#000;border:2px solid #1a2d4a;color:#4a6a8a;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">🏋️ GYM</button>
+    <button onclick="filterNegocios('Tienda')" id="nf-Tienda" style="background:#000;border:2px solid #1a2d4a;color:#4a6a8a;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">🛒 TIENDA</button>
+    <button onclick="filterNegocios('Nutrición')" id="nf-Nutrición" style="background:#000;border:2px solid #1a2d4a;color:#4a6a8a;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">🥗 NUTRICIÓN</button>
+    <button onclick="filterNegocios('Fisio')" id="nf-Fisio" style="background:#000;border:2px solid #1a2d4a;color:#4a6a8a;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">🏥 FISIO</button>
+    <button onclick="filterNegocios('Foto/Video')" id="nf-Foto/Video" style="background:#000;border:2px solid #1a2d4a;color:#4a6a8a;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">📸 FOTO</button>
+    <button onclick="filterNegocios('Otro')" id="nf-Otro" style="background:#000;border:2px solid #1a2d4a;color:#4a6a8a;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">📦 OTRO</button>
+  </div>
+
+  <div id="negocios-list" style="padding:0 14px 14px"></div>
+</div>
+
+<!-- 2. SCRIPT DEL MÓDULO -->
+<script>
+// ═══════════════════════════════════════════════════════════════
+// MÓDULO NEGOCIOS — BOXING CONNECT USA
+// Versión: 1.0 — Coach Osvimer Rodriguez
+// ═══════════════════════════════════════════════════════════════
+
+// ── CONFIGURACIÓN ─────────────────────────────────────────────
+var NEG_PRICE = 9.99;
+var NEG_CURRENCY = "USD";
+var ADMIN_PIN_NEG = "1967"; // PIN del coach para activar negocios
+// ⚠️ REEMPLAZA ESTE LINK CON TU STRIPE PAYMENT LINK REAL:
+// Ve a stripe.com → Payment Links → Crear → $9.99/mes → Copiar link
+var STRIPE_LINK = "https://buy.stripe.com/TU_LINK_AQUI";
+
+var allNegocios = [];
+var negFilter = "Todos";
+
+// ── FIREBASE LISTENER ─────────────────────────────────────────
+// Se conecta automáticamente cuando Firebase está listo
+function initNegocios() {
+  if (!fdb) return;
+  fdb.ref("negocios").orderByChild("createdAt").on("value", function(s) {
+    allNegocios = [];
+    s.forEach(function(c) {
+      var v = c.val(); v.id = c.key;
+      allNegocios.push(v);
+    });
+    allNegocios.reverse();
+    if (curPage === "negocios") renderNegocios();
+  });
+}
+
+// Intentar inicializar después de que Firebase cargue
+setTimeout(function() {
+  if (typeof fdb !== "undefined" && fdb) {
+    initNegocios();
+  } else {
+    // Reintentar si Firebase aún no está listo
+    var retries = 0;
+    var retryInterval = setInterval(function() {
+      retries++;
+      if ((typeof fdb !== "undefined" && fdb) || retries > 20) {
+        clearInterval(retryInterval);
+        if (typeof fdb !== "undefined" && fdb) initNegocios();
+      }
+    }, 500);
+  }
+}, 1000);
+
+// ── ACTUALIZAR NAV para incluir NEGOCIOS ──────────────────────
+// Override de buildNav para agregar la pestaña de negocios
+var _origBuildNav = typeof buildNav === "function" ? buildNav : null;
+buildNav = function() {
+  var tabs = [
+    {id:"inicio", ico:"🏠", label:"INICIO"},
+    {id:"sparring", ico:"🥊", label:"SPARRING"},
+    {id:"negocios", ico:"🏪", label:"NEGOCIOS"},
+    {id:"atletas", ico:"👤", label:"ATLETAS"},
+    {id:"feed", ico:"🌍", label:"FEED"}
+  ];
+  var tabBadge = {sparring:"sparring", eventos:"eventos", feed:"feed"};
+  var h = "";
+  tabs.forEach(function(t) {
+    var b = tabBadge[t.id] ? (typeof notifBadges !== "undefined" ? notifBadges[tabBadge[t.id]] : 0) : 0;
+    h += '<button class="nb' + (curPage === t.id ? " on" : "")
+      + '" onclick="goPage(\'' + t.id + '\')">'
+      + '<span class="ico">' + t.ico + '</span>' + t.label
+      + (b > 0 ? '<span class="badge">' + b + '</span>' : '')
+      + '</button>';
+  });
+  var navEl = document.getElementById("nav");
+  if (navEl) navEl.innerHTML = h;
+};
+
+// ── ACTUALIZAR goPage para incluir negocios ───────────────────
+var _origGoPage = typeof goPage === "function" ? goPage : null;
+goPage = function(p) {
+  curPage = p;
+  document.querySelectorAll(".pg").forEach(function(e) { e.classList.remove("act"); });
+  var pg = document.getElementById("pg-" + p);
+  if (pg) pg.classList.add("act");
+  if (typeof notifBadges !== "undefined" && notifBadges[p] > 0) {
+    notifBadges[p] = 0;
+  }
+  buildNav();
+  if (p === "sparring" && typeof renderSparring === "function") renderSparring();
+  if (p === "eventos" && typeof renderEventos === "function") renderEventos();
+  if (p === "atletas" && typeof renderAthletes === "function") renderAthletes();
+  if (p === "feed" && typeof renderFeed === "function") renderFeed();
+  if (p === "inicio" && typeof renderHome === "function") renderHome();
+  if (p === "negocios") renderNegocios();
+};
+
+// ── ACTUALIZAR MENÚ para incluir botón negocios ───────────────
+var _origOpenMenu = typeof openMenu === "function" ? openMenu : null;
+openMenu = function() {
+  var user = (typeof gym !== "undefined" ? gym : null) || (typeof athlete !== "undefined" ? athlete : null);
+  var h = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
+    + '<div style="font-size:16px;font-weight:900;color:#FFD700">Boxing Connect USA</div>'
+    + '<button onclick="closeMenu()" style="background:#e74c3c;border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer">✕</button></div>';
+
+  if (user) {
+    h += '<div class="card" style="margin-bottom:14px;border-color:#FFD700">'
+      + '<div style="font-size:14px;font-weight:800;color:#FFD700">'
+      + ((typeof gym !== "undefined" && gym) ? gym.name : (typeof athlete !== "undefined" && athlete ? athlete.name : ""))
+      + '</div>'
+      + '<div style="font-size:11px;color:#4a6a8a;margin-top:2px">'
+      + ((typeof gym !== "undefined" && gym) ? "Coach: " + gym.coach : "Atleta • " + ((typeof athlete !== "undefined" && athlete && athlete.weight) || "") + "lb")
+      + '</div>'
+      + '<div style="display:flex;gap:4px;margin-top:8px"><span class="live-dot"></span><span style="font-size:10px;color:#27ae60;font-weight:700">CONECTADO EN VIVO</span></div></div>';
+  }
+
+  // Botón destacado de negocios
+  h += '<button onclick="closeMenu();showPublicarNegocio()" style="width:100%;background:linear-gradient(135deg,#1a4a00,#0a2a00);border:2px solid #FFD700;color:#FFD700;border-radius:12px;padding:12px;font-weight:900;font-size:14px;cursor:pointer;margin-bottom:10px;letter-spacing:.5px">'
+    + '🏪 PUBLICAR MI NEGOCIO — $' + NEG_PRICE + '/mes</button>';
+
+  // Toggle sonido
+  if (typeof soundEnabled !== "undefined") {
+    h += '<button onclick="if(typeof toggleSound===\'function\')toggleSound()" style="width:100%;background:#000;border:1px solid #1a2d4a;color:#fff;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;text-align:left">'
+      + (soundEnabled ? "🔔" : "🔕") + ' ' + (soundEnabled ? "Sonido: ON" : "Sonido: OFF") + '</button>';
+  }
+
+  var items = [
+    {ico:"🏠", label:"Inicio", action:"goPage('inicio')"},
+    {ico:"🥊", label:"Sparring", action:"goPage('sparring')"},
+    {ico:"🏪", label:"Negocios", action:"goPage('negocios')"},
+    {ico:"👤", label:"Atletas", action:"goPage('atletas')"},
+    {ico:"🌍", label:"Feed Social", action:"goPage('feed')"},
+    {ico:"⏱️", label:"Cronómetro", action:"if(typeof showTimer==='function')showTimer()"},
+    {ico:"📺", label:"Peleas en Vivo", action:"if(typeof showLiveFights==='function')showLiveFights()"},
+    {ico:"🛒", label:"Tienda de Boxeo", action:"if(typeof showStore==='function')showStore()"},
+    {ico:"⚖️", label:"Política de Pesos", action:"if(typeof showWeightPolicy==='function')showWeightPolicy()"},
+    {ico:"🔑", label:"Admin Negocios", action:"showAdminNegocios()"}
+  ];
+
+  if (!user) {
+    h += '<button onclick="closeMenu();if(typeof showReg===\'function\')showReg()" class="btn-y" style="margin-bottom:14px">REGISTRARSE</button>';
+  } else {
+    h += '<button onclick="closeMenu();if(typeof doLogout===\'function\')doLogout()" class="btn-dark" style="margin-bottom:14px">Cerrar Sesión</button>';
+  }
+
+  h += '<div style="font-size:10px;color:#4a6a8a;margin-bottom:8px;letter-spacing:1px">NAVEGACIÓN</div>';
+  items.forEach(function(item) {
+    h += '<button onclick="closeMenu();' + item.action + '" style="width:100%;background:none;border:none;color:#fff;padding:12px 8px;text-align:left;cursor:pointer;border-bottom:1px solid #1a2d4a;font-size:14px">'
+      + item.ico + ' ' + item.label + '</button>';
+  });
+
+  var mc = document.getElementById("menu-content");
+  if (mc) mc.innerHTML = h;
+  var mp = document.getElementById("menu-panel");
+  if (mp) mp.style.display = "block";
+};
+
+// ── RENDERIZAR NEGOCIOS ───────────────────────────────────────
+function renderNegocios() {
+  var cont = document.getElementById("negocios-list");
+  if (!cont) return;
+
+  var activos = allNegocios.filter(function(n) {
+    return n.activo === true && (negFilter === "Todos" || n.categoria === negFilter);
+  });
+
+  if (!activos.length) {
+    cont.innerHTML = '<div style="text-align:center;padding:40px 20px">'
+      + '<div style="font-size:48px;margin-bottom:12px">🏪</div>'
+      + '<div style="font-size:16px;font-weight:800;color:#FFD700;margin-bottom:8px">Sin negocios en esta categoría</div>'
+      + '<div style="font-size:12px;color:#4a6a8a;margin-bottom:16px">¡Sé el primero en publicar tu negocio!</div>'
+      + '<button onclick="showPublicarNegocio()" class="btn-y" style="width:auto;padding:12px 24px">🏪 PUBLICAR MI NEGOCIO</button>'
+      + '</div>';
+    return;
+  }
+
+  var h = "";
+  activos.forEach(function(n) {
+    var own = (typeof myId === "function") && myId() && (n.ownerId === myId());
+    var catColors = {
+      "Gym": "#e74c3c", "Tienda": "#FFD700", "Nutrición": "#27ae60",
+      "Fisio": "#4a8aff", "Foto/Video": "#e91e8c", "Otro": "#7a9ab5"
+    };
+    var catColor = catColors[n.categoria] || "#FFD700";
+
+    h += '<div style="background:#000;border:1px solid ' + catColor + ';border-radius:14px;margin-bottom:12px;overflow:hidden">';
+
+    // Header del negocio
+    h += '<div style="background:linear-gradient(135deg,#060e1c,#0a1628);padding:14px">';
+    h += '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px">';
+
+    // Logo / Avatar
+    h += '<div style="width:56px;height:56px;border-radius:12px;background:' + catColor + ';display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden">';
+    if (n.foto) {
+      h += '<img src="' + (typeof xe === "function" ? xe(n.foto) : n.foto) + '" style="width:100%;height:100%;object-fit:cover">';
+    } else {
+      h += getCatIcon(n.categoria);
+    }
+    h += '</div>';
+
+    // Info
+    h += '<div style="flex:1;min-width:0">';
+    h += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px">';
+    h += '<div style="font-size:16px;font-weight:900;color:#fff">' + safeEsc(n.nombre) + '</div>';
+    h += '<span style="background:#FFD700;color:#000;font-size:9px;font-weight:900;padding:2px 6px;border-radius:6px;letter-spacing:1px">PATROCINADO</span>';
+    if (own) h += '<span style="background:#1a4a00;color:#FFD700;font-size:9px;font-weight:900;padding:2px 6px;border-radius:6px">TÚ</span>';
+    h += '</div>';
+    h += '<span style="background:' + catColor + '22;border:1px solid ' + catColor + ';color:' + catColor + ';font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px">' + getCatIcon(n.categoria) + ' ' + safeEsc(n.categoria) + '</span>';
+    h += '<div style="font-size:11px;color:#4a6a8a;margin-top:4px">📍 ' + safeEsc(n.ciudad || "") + (n.estado ? ", " + safeEsc(n.estado) : "") + '</div>';
+    h += '</div></div>';
+
+    // Descripción
+    if (n.descripcion) {
+      h += '<div style="font-size:13px;color:#ccc;line-height:1.5;margin-bottom:10px">' + safeEsc(n.descripcion) + '</div>';
+    }
+
+    // Promo especial
+    if (n.promo) {
+      h += '<div style="background:#1a4a00;border:1px solid #27ae60;border-radius:8px;padding:8px 12px;margin-bottom:10px">';
+      h += '<div style="font-size:10px;color:#27ae60;font-weight:900;margin-bottom:2px">🎁 OFERTA ESPECIAL</div>';
+      h += '<div style="font-size:12px;color:#fff">' + safeEsc(n.promo) + '</div></div>';
+    }
+
+    // Botones de contacto
+    h += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+    if (n.telefono) {
+      h += '<a href="tel:' + safeEsc(n.telefono) + '" style="flex:1;background:#27ae60;color:#fff;border-radius:10px;padding:10px;font-size:12px;font-weight:700;text-align:center;text-decoration:none;min-width:80px">📞 Llamar</a>';
+      h += '<a href="https://wa.me/1' + safeEsc(n.telefono.replace(/\D/g,"")) + '" target="_blank" style="flex:1;background:#25D366;color:#fff;border-radius:10px;padding:10px;font-size:12px;font-weight:700;text-align:center;text-decoration:none;min-width:80px">💬 WhatsApp</a>';
+    }
+    if (n.web) {
+      h += '<a href="' + safeEsc(n.web.startsWith("http") ? n.web : "https://"+n.web) + '" target="_blank" style="flex:1;background:#1a2d4a;color:#4a8aff;border:1px solid #4a8aff;border-radius:10px;padding:10px;font-size:12px;font-weight:700;text-align:center;text-decoration:none;min-width:80px">🌐 Web</a>';
+    }
+    if (n.instagram) {
+      h += '<a href="https://instagram.com/' + safeEsc(n.instagram.replace("@","")) + '" target="_blank" style="flex:1;background:#833ab4;color:#fff;border-radius:10px;padding:10px;font-size:12px;font-weight:700;text-align:center;text-decoration:none;min-width:80px">📷 IG</a>';
+    }
+    h += '</div>';
+
+    // Botones editar/eliminar para el dueño
+    if (own) {
+      h += '<div style="display:flex;gap:6px;margin-top:10px;border-top:1px solid #1a2d4a;padding-top:10px">';
+      h += '<button class="btn-edit" onclick="editNegocio(\'' + n.id + '\')">✏️ EDITAR MI NEGOCIO</button>';
+      h += '<button class="btn-del" onclick="deleteNegocio(\'' + n.id + '\')">🗑️ ELIMINAR</button>';
+      h += '</div>';
+    }
+
+    h += '</div></div>';
+  });
+
+  cont.innerHTML = h;
+}
+
+function getCatIcon(cat) {
+  var icons = {
+    "Gym":"🏋️","Tienda":"🛒","Nutrición":"🥗","Fisio":"🏥","Foto/Video":"📸","Otro":"📦"
+  };
+  return icons[cat] || "🏪";
+}
+
+function safeEsc(s) {
+  return typeof xe === "function" ? xe(s) : String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ── FILTRO DE CATEGORÍAS ──────────────────────────────────────
+function filterNegocios(cat) {
+  negFilter = cat;
+  // Update button styles
+  var cats = ["Todos","Gym","Tienda","Nutrición","Fisio","Foto/Video","Otro"];
+  cats.forEach(function(c) {
+    var btn = document.getElementById("nf-" + c);
+    if (!btn) return;
+    if (c === cat) {
+      btn.style.background = "#FFD700";
+      btn.style.color = "#000";
+      btn.style.border = "none";
+    } else {
+      btn.style.background = "#000";
+      btn.style.color = "#4a6a8a";
+      btn.style.border = "2px solid #1a2d4a";
+    }
+  });
+  renderNegocios();
+}
+
+// ── FORMULARIO PUBLICAR NEGOCIO ───────────────────────────────
+function showPublicarNegocio() {
+  var user = (typeof gym !== "undefined" ? gym : null) || (typeof athlete !== "undefined" ? athlete : null);
+  if (!user) {
+    showMN('<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:12px">Regístrate primero para publicar tu negocio</div><button class="btn-y" onclick="closeM()">OK</button>');
+    return;
+  }
+
+  // Check if user already has an active or pending business
+  var existing = allNegocios.find(function(n) { return n.ownerId === (typeof myId === "function" ? myId() : user.id); });
+
+  if (existing) {
+    showMN('<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:12px">🏪 Ya tienes un negocio registrado</div>'
+      + '<div class="card" style="margin-bottom:14px">'
+      + '<div style="font-weight:800;color:#fff">' + safeEsc(existing.nombre) + '</div>'
+      + '<div style="font-size:11px;color:' + (existing.activo ? "#27ae60" : "#FFD700") + ';margin-top:4px;font-weight:700">'
+      + (existing.activo ? "✅ ACTIVO" : "⏳ PENDIENTE — Esperando activación del admin") + '</div></div>'
+      + '<button onclick="editNegocio(\'' + existing.id + '\')" class="btn-y" style="margin-bottom:8px">✏️ EDITAR MI NEGOCIO</button>'
+      + '<button onclick="closeM()" class="btn-dark">Cerrar</button>');
+    return;
+  }
+
+  var _foto = null;
+  var estados = typeof COUNTRIES !== "undefined" ? (COUNTRIES["USA"] || []) : ["Nevada","California","Texas","Florida","New York"];
+
+  var h = '<div style="font-size:20px;font-weight:900;color:#FFD700;margin-bottom:4px">🏪 PUBLICAR MI NEGOCIO</div>';
+  h += '<div style="font-size:11px;color:#27ae60;font-weight:700;margin-bottom:16px">$' + NEG_PRICE + '/mes • Cancela cuando quieras</div>';
+
+  // Foto del negocio
+  h += '<div style="text-align:center;margin-bottom:14px">';
+  h += '<div id="neg-foto-prev" style="width:80px;height:80px;border-radius:14px;background:#000;border:3px solid #FFD700;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:32px;overflow:hidden">🏪</div>';
+  h += '<label style="background:#000;border:2px solid #FFD700;color:#FFD700;border-radius:10px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:700">📷 LOGO/FOTO<input type="file" id="neg-foto-inp" accept="image/*" style="display:none"></label></div>';
+
+  h += '<div style="margin-bottom:10px"><label class="lbl">NOMBRE DEL NEGOCIO *</label><input class="inp" id="neg-nombre" placeholder="Osvimer Boxing Academy"></div>';
+
+  h += '<div style="margin-bottom:10px"><label class="lbl">CATEGORÍA *</label><select class="sel" id="neg-cat">';
+  ["Gym","Tienda","Nutrición","Fisio","Foto/Video","Otro"].forEach(function(c) {
+    h += '<option>' + c + '</option>';
+  });
+  h += '</select></div>';
+
+  h += '<div style="margin-bottom:10px"><label class="lbl">DESCRIPCIÓN (máx 150 caracteres)</label><textarea class="inp" id="neg-desc" maxlength="150" placeholder="Describe tu negocio brevemente..." style="height:70px;resize:none"></textarea></div>';
+
+  h += '<div style="margin-bottom:10px"><label class="lbl">🎁 OFERTA ESPECIAL (opcional)</label><input class="inp" id="neg-promo" placeholder="Ej: 10% descuento para atletas de boxeo"></div>';
+
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">';
+  h += '<div><label class="lbl">CIUDAD *</label><input class="inp" id="neg-ciudad" placeholder="Las Vegas"></div>';
+  h += '<div><label class="lbl">ESTADO</label><select class="sel" id="neg-estado">';
+  estados.forEach(function(s) { h += '<option' + (s === "Nevada" ? " selected" : "") + '>' + s + '</option>'; });
+  h += '</select></div></div>';
+
+  h += '<div style="margin-bottom:10px"><label class="lbl">TELÉFONO *</label><input class="inp" type="tel" id="neg-tel" placeholder="702-xxx-xxxx"></div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  h += '<div><label class="lbl">INSTAGRAM</label><input class="inp" id="neg-ig" placeholder="@usuario" style="font-size:12px"></div>';
+  h += '<div><label class="lbl">SITIO WEB</label><input class="inp" id="neg-web" placeholder="www.tugym.com" style="font-size:12px"></div></div>';
+
+  // Precio y botón de pago
+  h += '<div style="background:#1a4a00;border:2px solid #27ae60;border-radius:12px;padding:14px;margin-bottom:14px;text-align:center">';
+  h += '<div style="font-size:24px;font-weight:900;color:#FFD700">$' + NEG_PRICE + ' <span style="font-size:14px;color:#ccc">/ mes</span></div>';
+  h += '<div style="font-size:11px;color:#27ae60;margin-top:4px">✅ Tu negocio aparece para toda la comunidad</div>';
+  h += '<div style="font-size:11px;color:#27ae60">✅ Logo, descripción, teléfono, WhatsApp, redes</div>';
+  h += '<div style="font-size:11px;color:#27ae60">✅ Cancela cuando quieras</div></div>';
+
+  h += '<button id="neg-submit" class="btn-y" style="margin-bottom:8px;font-size:16px">💳 PAGAR $' + NEG_PRICE + '/MES Y PUBLICAR</button>';
+  h += '<div style="font-size:10px;color:#4a6a8a;text-align:center;margin-bottom:8px">Pago seguro con Stripe • Acepta todas las tarjetas</div>';
+  h += '<div id="neg-msg" style="text-align:center;font-size:12px;margin-top:6px;min-height:16px"></div>';
+
+  showMN(h);
+
+  // Foto handler
+  setTimeout(function() {
+    var inp = document.getElementById("neg-foto-inp");
+    if (inp) inp.onchange = function() {
+      var file = this.files[0]; if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          var canvas = document.createElement("canvas");
+          var MAX = 200, w = img.width, h2 = img.height;
+          if (w > h2) { if (w > MAX) { h2 = h2*(MAX/w); w = MAX; } }
+          else { if (h2 > MAX) { w = w*(MAX/h2); h2 = MAX; } }
+          canvas.width = w; canvas.height = h2;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h2);
+          _foto = canvas.toDataURL("image/jpeg", 0.75);
+          var prev = document.getElementById("neg-foto-prev");
+          if (prev) prev.innerHTML = '<img src="' + _foto + '" style="width:100%;height:100%;object-fit:cover;border-radius:12px">';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    var btn = document.getElementById("neg-submit");
+    if (btn) btn.onclick = function() {
+      var msg = document.getElementById("neg-msg");
+      var nombre = document.getElementById("neg-nombre");
+      var tel = document.getElementById("neg-tel");
+      var ciudad = document.getElementById("neg-ciudad");
+
+      if (!nombre || !nombre.value.trim()) {
+        if (msg) msg.innerHTML = '<span style="color:#e74c3c">Ingresa el nombre del negocio</span>';
+        return;
+      }
+      if (!tel || !tel.value.trim()) {
+        if (msg) msg.innerHTML = '<span style="color:#e74c3c">Ingresa el teléfono</span>';
+        return;
+      }
+      if (!ciudad || !ciudad.value.trim()) {
+        if (msg) msg.innerHTML = '<span style="color:#e74c3c">Ingresa la ciudad</span>';
+        return;
+      }
+
+      // Guardar datos en Firebase como PENDIENTE
+      var user2 = (typeof gym !== "undefined" ? gym : null) || (typeof athlete !== "undefined" ? athlete : null);
+      var uid2 = typeof uid === "function" ? uid() : Date.now().toString(36);
+
+      var negData = {
+        id: uid2,
+        ownerId: typeof myId === "function" ? myId() : (user2 ? user2.id : uid2),
+        ownerName: (typeof gym !== "undefined" && gym) ? gym.name : ((typeof athlete !== "undefined" && athlete) ? athlete.name : ""),
+        nombre: nombre.value.trim(),
+        categoria: document.getElementById("neg-cat") ? document.getElementById("neg-cat").value : "Otro",
+        descripcion: document.getElementById("neg-desc") ? document.getElementById("neg-desc").value.trim() : "",
+        promo: document.getElementById("neg-promo") ? document.getElementById("neg-promo").value.trim() : "",
+        ciudad: ciudad.value.trim(),
+        estado: document.getElementById("neg-estado") ? document.getElementById("neg-estado").value : "",
+        telefono: tel.value.trim(),
+        instagram: document.getElementById("neg-ig") ? document.getElementById("neg-ig").value.trim().replace("@","") : "",
+        web: document.getElementById("neg-web") ? document.getElementById("neg-web").value.trim() : "",
+        foto: _foto || null,
+        activo: false,  // ← pendiente hasta que admin active
+        precio: NEG_PRICE,
+        moneda: NEG_CURRENCY,
+        createdAt: Date.now()
+      };
+
+      if (msg) msg.innerHTML = '<span style="color:#FFD700">Guardando... te redirigimos al pago</span>';
+
+      // Guardar en Firebase
+      if (typeof fdb !== "undefined" && fdb) {
+        fdb.ref("negocios/" + uid2).set(negData).then(function() {
+          // Redirigir a Stripe
+          setTimeout(function() {
+            if (STRIPE_LINK !== "https://buy.stripe.com/TU_LINK_AQUI") {
+              // Stripe configurado - redirigir
+              window.open(STRIPE_LINK + "?client_reference_id=" + uid2, "_blank");
+              closeM();
+              showMN('<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:12px">✅ ¡Datos guardados!</div>'
+                + '<div style="font-size:13px;color:#ccc;margin-bottom:14px;line-height:1.5">Completa el pago en la ventana que se abrió. Tu negocio se activará en menos de 24 horas.</div>'
+                + '<div class="card" style="border-color:#FFD700;margin-bottom:14px">'
+                + '<div style="font-size:11px;color:#FFD700;font-weight:700;margin-bottom:4px">📋 PRÓXIMOS PASOS:</div>'
+                + '<div style="font-size:12px;color:#ccc;line-height:1.6">1. Completa el pago de $' + NEG_PRICE + '/mes en Stripe<br>2. El admin verifica y activa tu negocio<br>3. Tu negocio aparece en la sección 🏪 NEGOCIOS</div></div>'
+                + '<button onclick="closeM()" class="btn-y">ENTENDIDO</button>');
+            } else {
+              // Stripe no configurado aún - mostrar instrucciones
+              closeM();
+              showMN('<div style="font-size:16px;font-weight:900;color:#FFD700;margin-bottom:12px">✅ ¡Solicitud enviada!</div>'
+                + '<div style="font-size:13px;color:#ccc;margin-bottom:14px;line-height:1.5">Tu negocio está pendiente de activación. El coach te contactará para coordinar el pago de $' + NEG_PRICE + '/mes.</div>'
+                + '<div class="card" style="border-color:#27ae60;margin-bottom:14px">'
+                + '<div style="font-size:11px;color:#27ae60;font-weight:700;margin-bottom:4px">📞 CONTACTO PARA PAGO:</div>'
+                + '<div style="font-size:13px;color:#fff;font-weight:700">Coach Osvimer Rodriguez</div>'
+                + '<div style="font-size:12px;color:#4a8aff">boxingosvimer67kg@gmail.com</div>'
+                + '<a href="https://wa.me/17027234009" target="_blank" style="display:block;background:#25D366;color:#fff;border-radius:10px;padding:10px;font-size:13px;font-weight:700;text-align:center;text-decoration:none;margin-top:8px">💬 WhatsApp: (702) 723-4009</a></div>'
+                + '<button onclick="closeM()" class="btn-y">ENTENDIDO</button>');
+            }
+          }, 500);
+        }).catch(function() {
+          if (msg) msg.innerHTML = '<span style="color:#e74c3c">Error al guardar. Intenta de nuevo.</span>';
+        });
+      } else {
+        if (msg) msg.innerHTML = '<span style="color:#e74c3c">Sin conexión. Intenta de nuevo.</span>';
+      }
+    };
+  }, 100);
+}
+
+// ── EDITAR NEGOCIO ────────────────────────────────────────────
+function editNegocio(id) {
+  var n = allNegocios.find(function(x) { return x.id === id; });
+  if (!n) return;
+  var _foto = n.foto || null;
+
+  var h = '<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">✏️ EDITAR NEGOCIO</div>';
+
+  h += '<div style="text-align:center;margin-bottom:14px">';
+  h += '<div id="en-foto-prev" style="width:70px;height:70px;border-radius:12px;background:#000;border:3px solid #FFD700;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden">';
+  if (n.foto) h += '<img src="' + safeEsc(n.foto) + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+  else h += '🏪';
+  h += '</div>';
+  h += '<label style="background:#000;border:2px solid #FFD700;color:#FFD700;border-radius:10px;padding:6px 14px;font-size:11px;cursor:pointer;font-weight:700">📷 CAMBIAR FOTO<input type="file" id="en-foto-inp" accept="image/*" style="display:none"></label></div>';
+
+  h += '<div style="margin-bottom:10px"><label class="lbl">NOMBRE</label><input class="inp" id="en-nombre" value="' + safeEsc(n.nombre) + '"></div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">DESCRIPCIÓN</label><textarea class="inp" id="en-desc" maxlength="150" style="height:60px;resize:none">' + safeEsc(n.descripcion || "") + '</textarea></div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">OFERTA ESPECIAL</label><input class="inp" id="en-promo" value="' + safeEsc(n.promo || "") + '"></div>';
+  h += '<div style="margin-bottom:10px"><label class="lbl">TELÉFONO</label><input class="inp" type="tel" id="en-tel" value="' + safeEsc(n.telefono || "") + '"></div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  h += '<div><label class="lbl">INSTAGRAM</label><input class="inp" id="en-ig" value="' + safeEsc(n.instagram || "") + '" style="font-size:12px"></div>';
+  h += '<div><label class="lbl">WEB</label><input class="inp" id="en-web" value="' + safeEsc(n.web || "") + '" style="font-size:12px"></div></div>';
+
+  h += '<div style="margin-bottom:6px;padding:10px;background:' + (n.activo ? "#1a4a00" : "#1a2a00") + ';border-radius:8px;font-size:12px;font-weight:700;color:' + (n.activo ? "#27ae60" : "#FFD700") + '">'
+    + (n.activo ? "✅ ACTIVO — visible para todos" : "⏳ PENDIENTE — esperando activación") + '</div>';
+
+  h += '<button id="en-save" class="btn-y" style="margin-bottom:8px">GUARDAR CAMBIOS</button>';
+  h += '<div id="en-msg" style="text-align:center;font-size:12px;margin-top:6px"></div>';
+
+  showMN(h);
+
+  setTimeout(function() {
+    var inp = document.getElementById("en-foto-inp");
+    if (inp) inp.onchange = function() {
+      var file = this.files[0]; if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          var canvas = document.createElement("canvas");
+          var MAX = 200, w = img.width, h2 = img.height;
+          if (w > h2) { if (w > MAX) { h2 = h2*(MAX/w); w = MAX; } }
+          else { if (h2 > MAX) { w = w*(MAX/h2); h2 = MAX; } }
+          canvas.width = w; canvas.height = h2;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h2);
+          _foto = canvas.toDataURL("image/jpeg", 0.75);
+          var prev = document.getElementById("en-foto-prev");
+          if (prev) prev.innerHTML = '<img src="' + _foto + '" style="width:100%;height:100%;object-fit:cover;border-radius:10px">';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    var saveBtn = document.getElementById("en-save");
+    if (saveBtn) saveBtn.onclick = function() {
+      var msg = document.getElementById("en-msg");
+      var nombre = document.getElementById("en-nombre");
+      if (!nombre || !nombre.value.trim()) {
+        if (msg) msg.innerHTML = '<span style="color:#e74c3c">Ingresa el nombre</span>';
+        return;
+      }
+      var updates = {
+        nombre: nombre.value.trim(),
+        descripcion: document.getElementById("en-desc") ? document.getElementById("en-desc").value.trim() : "",
+        promo: document.getElementById("en-promo") ? document.getElementById("en-promo").value.trim() : "",
+        telefono: document.getElementById("en-tel") ? document.getElementById("en-tel").value.trim() : "",
+        instagram: document.getElementById("en-ig") ? document.getElementById("en-ig").value.trim().replace("@","") : "",
+        web: document.getElementById("en-web") ? document.getElementById("en-web").value.trim() : "",
+        foto: _foto
+      };
+      if (msg) msg.innerHTML = '<span style="color:#FFD700">Guardando...</span>';
+      if (typeof fdb !== "undefined" && fdb) {
+        fdb.ref("negocios/" + id).update(updates).then(function() {
+          closeM();
+        }).catch(function() {
+          if (msg) msg.innerHTML = '<span style="color:#e74c3c">Error al guardar</span>';
+        });
+      }
+    };
+  }, 100);
+}
+
+// ── ELIMINAR NEGOCIO ──────────────────────────────────────────
+function deleteNegocio(id) {
+  if (!confirm("¿Eliminar tu negocio? Se cancelará tu publicación.")) return;
+  if (typeof fdb !== "undefined" && fdb) {
+    fdb.ref("negocios/" + id).remove();
+  }
+}
+
+// ── PANEL DE ADMIN ────────────────────────────────────────────
+function showAdminNegocios() {
+  var h = '<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">🔑 ADMIN NEGOCIOS</div>';
+  h += '<div style="margin-bottom:14px"><label class="lbl">PIN DE ADMIN</label>'
+    + '<input type="password" class="inp" id="admin-pin-neg" placeholder="••••" maxlength="6"></div>';
+  h += '<button onclick="verifyAdminPin()" class="btn-y" style="margin-bottom:8px">ENTRAR</button>';
+  h += '<div id="admin-msg" style="text-align:center;font-size:12px;margin-top:6px"></div>';
+  showMN(h);
+}
+
+function verifyAdminPin() {
+  var pinEl = document.getElementById("admin-pin-neg");
+  var msg = document.getElementById("admin-msg");
+  if (!pinEl) return;
+  if (pinEl.value !== ADMIN_PIN_NEG) {
+    if (msg) msg.innerHTML = '<span style="color:#e74c3c">PIN incorrecto</span>';
+    return;
+  }
+  renderAdminPanel();
+}
+
+function renderAdminPanel() {
+  var pendientes = allNegocios.filter(function(n) { return !n.activo; });
+  var activos = allNegocios.filter(function(n) { return n.activo; });
+
+  var h = '<div style="font-size:18px;font-weight:900;color:#FFD700;margin-bottom:14px">🔑 PANEL ADMIN</div>';
+
+  // Stats
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">';
+  h += '<div class="stat-box"><div class="stat-num">' + activos.length + '</div><div class="stat-lbl">ACTIVOS</div></div>';
+  h += '<div class="stat-box"><div class="stat-num">' + pendientes.length + '</div><div class="stat-lbl">PENDIENTES</div></div>';
+  h += '</div>';
+
+  var ingresoMensual = activos.length * NEG_PRICE;
+  h += '<div style="background:#1a4a00;border:2px solid #27ae60;border-radius:12px;padding:12px;margin-bottom:14px;text-align:center">';
+  h += '<div style="font-size:11px;color:#27ae60;font-weight:700;margin-bottom:4px">💰 INGRESO MENSUAL ESTIMADO</div>';
+  h += '<div style="font-size:28px;font-weight:900;color:#FFD700">$' + ingresoMensual.toFixed(2) + '</div></div>';
+
+  // Pendientes
+  if (pendientes.length > 0) {
+    h += '<div style="font-size:11px;font-weight:900;color:#FFD700;letter-spacing:1px;margin-bottom:8px">⏳ PENDIENTES DE ACTIVACIÓN (' + pendientes.length + ')</div>';
+    pendientes.forEach(function(n) {
+      h += '<div class="card" style="border-color:#FFD700;margin-bottom:8px">';
+      h += '<div style="font-weight:800;color:#fff;margin-bottom:2px">' + safeEsc(n.nombre) + '</div>';
+      h += '<div style="font-size:11px;color:#4a6a8a;margin-bottom:4px">' + safeEsc(n.categoria) + ' • ' + safeEsc(n.ciudad || "") + ' • ' + safeEsc(n.ownerName || "") + '</div>';
+      h += '<div style="font-size:11px;color:#7a9ab5;margin-bottom:8px">📅 ' + new Date(n.createdAt).toLocaleDateString() + '</div>';
+      h += '<div style="display:flex;gap:6px">';
+      h += '<button onclick="activarNegocio(\'' + n.id + '\')" style="flex:1;background:#27ae60;border:none;color:#fff;border-radius:10px;padding:8px;font-weight:900;font-size:12px;cursor:pointer">✅ ACTIVAR</button>';
+      h += '<button onclick="rechazarNegocio(\'' + n.id + '\')" style="flex:1;background:#e74c3c;border:none;color:#fff;border-radius:10px;padding:8px;font-weight:900;font-size:12px;cursor:pointer">❌ RECHAZAR</button>';
+      h += '</div></div>';
+    });
+  } else {
+    h += '<div style="text-align:center;padding:16px;color:#27ae60;font-size:13px;font-weight:700">✅ Sin negocios pendientes</div>';
+  }
+
+  // Activos
+  if (activos.length > 0) {
+    h += '<div style="font-size:11px;font-weight:900;color:#27ae60;letter-spacing:1px;margin-top:14px;margin-bottom:8px">✅ ACTIVOS (' + activos.length + ')</div>';
+    activos.forEach(function(n) {
+      h += '<div style="background:#000;border:1px solid #1a4a00;border-radius:10px;padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">';
+      h += '<div><div style="font-weight:700;color:#fff;font-size:13px">' + safeEsc(n.nombre) + '</div>';
+      h += '<div style="font-size:11px;color:#4a6a8a">' + safeEsc(n.categoria) + ' • $' + NEG_PRICE + '/mes</div></div>';
+      h += '<button onclick="desactivarNegocio(\'' + n.id + '\')" style="background:#1a0000;border:1px solid #e74c3c;color:#e74c3c;border-radius:8px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer">PAUSAR</button>';
+      h += '</div>';
+    });
+  }
+
+  h += '<button onclick="closeM()" class="btn-dark" style="margin-top:14px">CERRAR</button>';
+  showMN(h);
+}
+
+function activarNegocio(id) {
+  if (typeof fdb !== "undefined" && fdb) {
+    fdb.ref("negocios/" + id).update({activo: true}).then(function() {
+      renderAdminPanel();
+    });
+  }
+}
+
+function rechazarNegocio(id) {
+  if (!confirm("¿Rechazar y eliminar este negocio?")) return;
+  if (typeof fdb !== "undefined" && fdb) {
+    fdb.ref("negocios/" + id).remove().then(function() {
+      renderAdminPanel();
+    });
+  }
+}
+
+function desactivarNegocio(id) {
+  if (typeof fdb !== "undefined" && fdb) {
+    fdb.ref("negocios/" + id).update({activo: false}).then(function() {
+      renderAdminPanel();
+    });
+  }
+}
+
+// ── MODAL HELPER PARA NEGOCIOS ────────────────────────────────
+function showMN(html) {
+  if (typeof showM === "function") {
+    showM(html);
+  } else {
+    var modal = document.getElementById("modal");
+    if (modal) {
+      modal.innerHTML = '<div class="modal-bg"><div class="modal-box">'
+        + '<div class="close-bar"><div></div><button class="close-x" onclick="closeM()">✕</button></div>'
+        + html + '</div></div>';
+    }
+  }
+}
+
+// ── CSS ADICIONAL ─────────────────────────────────────────────
+(function() {
+  var style = document.createElement("style");
+  style.textContent = ".btn-edit{background:linear-gradient(135deg,#0a1a3a,#1a2d4a);border:2px solid #4a8aff;color:#4a8aff;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:900;cursor:pointer;flex:1}.btn-del{background:linear-gradient(135deg,#1a0000,#2a0000);border:2px solid #e74c3c;color:#e74c3c;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:900;cursor:pointer;flex:1}";
+  document.head.appendChild(style);
+})();
+
+console.log("✅ Módulo Negocios cargado — Boxing Connect USA");
+</script>
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+
